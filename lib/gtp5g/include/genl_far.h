@@ -12,22 +12,24 @@ enum gtp5g_far_attrs {
 
     /* Not IEs in 3GPP Spec, for other purpose */
     GTP5G_FAR_RELATED_TO_PDR,
+    GTP5G_FAR_UL_OR_DL,
 
     GTP5G_FAR_SEID,
     GTP5G_FAR_BAR_ID,
     __GTP5G_FAR_ATTR_MAX,
 };
-#define GTP5G_FAR_ATTR_MAX (__GTP5G_FAR_ATTR_MAX - 1)
+#define GTP5G_FAR_ATTR_MAX 16
 
 /* Nest in GTP5G_FAR_FORWARDING_PARAMETER */
 enum gtp5g_forwarding_parameter_attrs {
     GTP5G_FORWARDING_PARAMETER_OUTER_HEADER_CREATION = 1,
     GTP5G_FORWARDING_PARAMETER_FORWARDING_POLICY,
     GTP5G_FORWARDING_PARAMETER_PFCPSM_REQ_FLAGS,
+    GTP5G_FORWARDING_PARAMETER_TOS_TC,
 
     __GTP5G_FORWARDING_PARAMETER_ATTR_MAX,
 };
-#define GTP5G_FORWARDING_PARAMETER_ATTR_MAX (__GTP5G_FORWARDING_PARAMETER_ATTR_MAX - 1)
+#define GTP5G_FORWARDING_PARAMETER_ATTR_MAX 16
 
 /* Nest in GTP5G_FORWARDING_PARAMETER_OUTER_HEADER_CREATION */
 enum gtp5g_outer_header_creation_attrs {
@@ -38,7 +40,7 @@ enum gtp5g_outer_header_creation_attrs {
 
     __GTP5G_OUTER_HEADER_CREATION_ATTR_MAX,
 };
-#define GTP5G_OUTER_HEADER_CREATION_ATTR_MAX (__GTP5G_OUTER_HEADER_CREATION_ATTR_MAX - 1)
+#define GTP5G_OUTER_HEADER_CREATION_ATTR_MAX 16
 
 extern int gtp5g_genl_add_far(struct sk_buff *, struct genl_info *);
 extern int gtp5g_genl_del_far(struct sk_buff *, struct genl_info *);
