@@ -1,12 +1,10 @@
-package tunnel
+package main
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"strconv"
-	"strings"
 	"sync"
 	"syscall"
 
@@ -14,9 +12,10 @@ import (
 	"github.com/khirono/go-nl"
 )
 
-func ParseFAROptions(args []string) ([]nl.Attr, error) {
+func ParseQEROptions(args []string) ([]nl.Attr, error) {
 	var attrs []nl.Attr
-	var paramv nl.AttrList
+	var mbrv nl.AttrList
+	var gbrv nl.AttrList
 	p := NewCmdParser(args)
 	for {
 		opt, ok := p.GetToken()
@@ -24,8 +23,7 @@ func ParseFAROptions(args []string) ([]nl.Attr, error) {
 			break
 		}
 		switch opt {
-		case "--action":
-			// --action <apply-action>
+		case "--gate-status":
 			arg, ok := p.GetToken()
 			if !ok {
 				return attrs, fmt.Errorf("option requires argument %q", opt)
@@ -35,114 +33,170 @@ func ParseFAROptions(args []string) ([]nl.Attr, error) {
 				return attrs, err
 			}
 			attrs = append(attrs, nl.Attr{
-				Type:  gtp5gnl.FAR_APPLY_ACTION,
-				Value: nl.AttrU16(v),
-			})
-		case "--hdr-creation":
-			// --hdr-creation <description> <o-teid> <peer-ipv4> <peer-port>
-			arg, ok := p.GetToken()
-			if !ok {
-				return attrs, fmt.Errorf("option requires argument %q", opt)
-			}
-			desc, err := strconv.ParseUint(arg, 0, 16)
-			if err != nil {
-				return attrs, err
-			}
-			arg2, ok := p.GetToken()
-			if !ok {
-				return attrs, fmt.Errorf("option requires argument %q", opt)
-			}
-			teid, err := strconv.ParseUint(arg2, 0, 32)
-			if err != nil {
-				return attrs, err
-			}
-			arg3, ok := p.GetToken()
-			if !ok {
-				return attrs, fmt.Errorf("option requires argument %q", opt)
-			}
-			addr := net.ParseIP(arg3)
-			if addr == nil {
-				return attrs, fmt.Errorf("invalid IP address %q", arg3)
-			}
-			addr = addr.To4()
-			if addr == nil {
-				return attrs, fmt.Errorf("option value is not IPv4 %q", arg3)
-			}
-			arg4, ok := p.GetToken()
-			if !ok {
-				return attrs, fmt.Errorf("option requires argument %q", opt)
-			}
-			port, err := strconv.ParseUint(arg4, 0, 16)
-			if err != nil {
-				return attrs, err
-			}
-			paramv = append(paramv, nl.Attr{
-				Type: gtp5gnl.FORWARDING_PARAMETER_OUTER_HEADER_CREATION,
-				Value: nl.AttrList{
-					{
-						Type:  gtp5gnl.OUTER_HEADER_CREATION_DESCRIPTION,
-						Value: nl.AttrU8(desc),
-					},
-					{
-						Type:  gtp5gnl.OUTER_HEADER_CREATION_O_TEID,
-						Value: nl.AttrU32(teid),
-					},
-					{
-						Type:  gtp5gnl.OUTER_HEADER_CREATION_PEER_ADDR_IPV4,
-						Value: nl.AttrBytes(addr),
-					},
-					{
-						Type:  gtp5gnl.OUTER_HEADER_CREATION_PORT,
-						Value: nl.AttrU16(port),
-					},
-				},
-			})
-		case "--fwd-policy":
-			// --fwd-policy <mark set in iptable>
-			arg, ok := p.GetToken()
-			if !ok {
-				return attrs, fmt.Errorf("option requires argument %q", opt)
-			}
-			paramv = append(paramv, nl.Attr{
-				Type:  gtp5gnl.FORWARDING_PARAMETER_FORWARDING_POLICY,
-				Value: nl.AttrString(arg),
-			})
-		case "--direction":
-			// --direction <dl|ul>
-			arg, ok := p.GetToken()
-			if !ok {
-				return attrs, fmt.Errorf("option requires argument %q", opt)
-			}
-			var v uint8
-			switch strings.ToLower(arg) {
-			case "dl":
-				v = 0
-			case "ul":
-				v = 0x10
-			default:
-				return attrs, fmt.Errorf("unknown argument %s, expected 'ul' or 'dl'", arg)
-			}
-			attrs = append(attrs, nl.Attr{
-				Type:  gtp5gnl.FAR_UL_OR_DL,
+				Type:  gtp5gnl.QER_GATE,
 				Value: nl.AttrU8(v),
 			})
+		case "--mbr-uhigh":
+			return attrs, fmt.Errorf("option %q is deprecated", opt)
+		case "--mbr-ulow":
+			return attrs, fmt.Errorf("option %q is deprecated", opt)
+		case "--mbr-dhigh":
+			return attrs, fmt.Errorf("option %q is deprecated", opt)
+		case "--mbr-dlow":
+			return attrs, fmt.Errorf("option %q is deprecated", opt)
+		case "--gbr-uhigh":
+			return attrs, fmt.Errorf("option %q is deprecated", opt)
+		case "--gbr-ulow":
+			return attrs, fmt.Errorf("option %q is deprecated", opt)
+		case "--gbr-dhigh":
+			return attrs, fmt.Errorf("option %q is deprecated", opt)
+		case "--gbr-dlow":
+			return attrs, fmt.Errorf("option %q is deprecated", opt)
+		case "--mbr-ul":
+			arg, ok := p.GetToken()
+			if !ok {
+				return attrs, fmt.Errorf("option requires argument %q", opt)
+			}
+			v, err := strconv.ParseUint(arg, 0, 40)
+			if err != nil {
+				return attrs, err
+			}
+			mbrv = append(mbrv, nl.Attr{
+				Type:  gtp5gnl.QER_MBR_UL_HIGH32,
+				Value: nl.AttrU32(v >> 8),
+			})
+			mbrv = append(mbrv, nl.Attr{
+				Type:  gtp5gnl.QER_MBR_UL_LOW8,
+				Value: nl.AttrU8(v),
+			})
+		case "--mbr-dl":
+			arg, ok := p.GetToken()
+			if !ok {
+				return attrs, fmt.Errorf("option requires argument %q", opt)
+			}
+			v, err := strconv.ParseUint(arg, 0, 40)
+			if err != nil {
+				return attrs, err
+			}
+			mbrv = append(mbrv, nl.Attr{
+				Type:  gtp5gnl.QER_MBR_DL_HIGH32,
+				Value: nl.AttrU32(v >> 8),
+			})
+			mbrv = append(mbrv, nl.Attr{
+				Type:  gtp5gnl.QER_MBR_DL_LOW8,
+				Value: nl.AttrU8(v),
+			})
+		case "--gbr-ul":
+			arg, ok := p.GetToken()
+			if !ok {
+				return attrs, fmt.Errorf("option requires argument %q", opt)
+			}
+			v, err := strconv.ParseUint(arg, 0, 40)
+			if err != nil {
+				return attrs, err
+			}
+			gbrv = append(gbrv, nl.Attr{
+				Type:  gtp5gnl.QER_GBR_UL_HIGH32,
+				Value: nl.AttrU32(v >> 8),
+			})
+			gbrv = append(gbrv, nl.Attr{
+				Type:  gtp5gnl.QER_GBR_UL_LOW8,
+				Value: nl.AttrU8(v),
+			})
+		case "--gbr-dl":
+			arg, ok := p.GetToken()
+			if !ok {
+				return attrs, fmt.Errorf("option requires argument %q", opt)
+			}
+			v, err := strconv.ParseUint(arg, 0, 40)
+			if err != nil {
+				return attrs, err
+			}
+			gbrv = append(gbrv, nl.Attr{
+				Type:  gtp5gnl.QER_GBR_DL_HIGH32,
+				Value: nl.AttrU32(v >> 8),
+			})
+			gbrv = append(gbrv, nl.Attr{
+				Type:  gtp5gnl.QER_GBR_DL_LOW8,
+				Value: nl.AttrU8(v),
+			})
+		case "--qer-corr-id":
+			arg, ok := p.GetToken()
+			if !ok {
+				return attrs, fmt.Errorf("option requires argument %q", opt)
+			}
+			v, err := strconv.ParseUint(arg, 0, 32)
+			if err != nil {
+				return attrs, err
+			}
+			attrs = append(attrs, nl.Attr{
+				Type:  gtp5gnl.QER_CORR_ID,
+				Value: nl.AttrU32(v),
+			})
+		case "--rqi":
+			arg, ok := p.GetToken()
+			if !ok {
+				return attrs, fmt.Errorf("option requires argument %q", opt)
+			}
+			v, err := strconv.ParseUint(arg, 0, 8)
+			if err != nil {
+				return attrs, err
+			}
+			attrs = append(attrs, nl.Attr{
+				Type:  gtp5gnl.QER_RQI,
+				Value: nl.AttrU8(v),
+			})
+		case "--qfi":
+			arg, ok := p.GetToken()
+			if !ok {
+				return attrs, fmt.Errorf("option requires argument %q", opt)
+			}
+			v, err := strconv.ParseUint(arg, 0, 8)
+			if err != nil {
+				return attrs, err
+			}
+			attrs = append(attrs, nl.Attr{
+				Type:  gtp5gnl.QER_QFI,
+				Value: nl.AttrU8(v),
+			})
+		case "--ppi":
+			arg, ok := p.GetToken()
+			if !ok {
+				return attrs, fmt.Errorf("option requires argument %q", opt)
+			}
+			v, err := strconv.ParseUint(arg, 0, 8)
+			if err != nil {
+				return attrs, err
+			}
+			attrs = append(attrs, nl.Attr{
+				Type:  gtp5gnl.QER_PPI,
+				Value: nl.AttrU8(v),
+			})
+		case "--rcsr":
+			return attrs, fmt.Errorf("option %q is deprecated", opt)
 		default:
 			return attrs, fmt.Errorf("unknown option %q", opt)
 		}
 	}
 
-	if len(paramv) != 0 {
+	if len(mbrv) != 0 {
 		attrs = append(attrs, nl.Attr{
-			Type:  gtp5gnl.FAR_FORWARDING_PARAMETER,
-			Value: paramv,
+			Type:  gtp5gnl.QER_MBR,
+			Value: mbrv,
+		})
+	}
+	if len(gbrv) != 0 {
+		attrs = append(attrs, nl.Attr{
+			Type:  gtp5gnl.QER_GBR,
+			Value: gbrv,
 		})
 	}
 
 	return attrs, nil
 }
 
-// add far <ifname> <oid> [options...]
-func CmdAddFAR(args []string) error {
+// add qer <ifname> <oid> [options...]
+func CmdAddQER(args []string) error {
 	if len(args) < 2 {
 		return errors.New("too few parameter")
 	}
@@ -151,7 +205,7 @@ func CmdAddFAR(args []string) error {
 	if err != nil {
 		return err
 	}
-	attrs, err := ParseFAROptions(args[2:])
+	attrs, err := ParseQEROptions(args[2:])
 	if err != nil {
 		return err
 	}
@@ -187,11 +241,11 @@ func CmdAddFAR(args []string) error {
 		return err
 	}
 
-	return gtp5gnl.CreateFAROID(c, link, oid, attrs)
+	return gtp5gnl.CreateQEROID(c, link, oid, attrs)
 }
 
-// mod far <ifname> <oid> [options...]
-func CmdModFAR(args []string) error {
+// mod qer <ifname> <oid> [options...]
+func CmdModQER(args []string) error {
 	if len(args) < 2 {
 		return errors.New("too few parameter")
 	}
@@ -200,7 +254,7 @@ func CmdModFAR(args []string) error {
 	if err != nil {
 		return err
 	}
-	attrs, err := ParseFAROptions(args[2:])
+	attrs, err := ParseQEROptions(args[2:])
 	if err != nil {
 		return err
 	}
@@ -236,11 +290,11 @@ func CmdModFAR(args []string) error {
 		return err
 	}
 
-	return gtp5gnl.UpdateFAROID(c, link, oid, attrs)
+	return gtp5gnl.UpdateQEROID(c, link, oid, attrs)
 }
 
 // delete far <ifname> <oid>
-func CmdDeleteFAR(args []string) error {
+func CmdDeleteQER(args []string) error {
 	if len(args) < 2 {
 		return errors.New("too few parameter")
 	}
@@ -281,11 +335,11 @@ func CmdDeleteFAR(args []string) error {
 		return err
 	}
 
-	return gtp5gnl.RemoveFAROID(c, link, oid)
+	return gtp5gnl.RemoveQEROID(c, link, oid)
 }
 
-// get far <ifname> <oid>
-func CmdGetFAR(args []string) error {
+// get qer <ifname> <oid>
+func CmdGetQER(args []string) error {
 	if len(args) < 2 {
 		return errors.New("too few parameter")
 	}
@@ -326,12 +380,12 @@ func CmdGetFAR(args []string) error {
 		return err
 	}
 
-	far, err := gtp5gnl.GetFAROID(c, link, oid)
+	qer, err := gtp5gnl.GetQEROID(c, link, oid)
 	if err != nil {
 		return err
 	}
 
-	j, err := json.MarshalIndent(far, "", "  ")
+	j, err := json.MarshalIndent(qer, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -339,8 +393,8 @@ func CmdGetFAR(args []string) error {
 	return nil
 }
 
-// list far
-func CmdListFAR(args []string) error {
+// list qer
+func CmdListQER(args []string) error {
 	var wg sync.WaitGroup
 	mux, err := nl.NewMux()
 	if err != nil {
@@ -367,12 +421,12 @@ func CmdListFAR(args []string) error {
 		return err
 	}
 
-	fars, err := gtp5gnl.GetFARAll(c)
+	qers, err := gtp5gnl.GetQERAll(c)
 	if err != nil {
 		return err
 	}
 
-	j, err := json.MarshalIndent(fars, "", "  ")
+	j, err := json.MarshalIndent(qers, "", "  ")
 	if err != nil {
 		return err
 	}

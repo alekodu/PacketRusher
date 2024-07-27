@@ -78,7 +78,7 @@ func SetupGtpInterface(ue *context.UEContext, msg gnbContext.UEMessage) {
 		return
 	}
 
-	cmdAddFar = []string{nameInf, "2", "--action", "2", "--hdr-creation", "0", fmt.Sprint(gnbPduSession.GetTeidUplink()), upfIp, "2152"}
+	cmdAddFar = []string{nameInf, "2", "--action", "2", "--hdr-creation", "0", fmt.Sprint(gnbPduSession.GetTeidUplink()), upfIp, "2152", "--direction", "ul"}
 	log.Debug("[UE][GTP] Setting up GTP Forwarding Action Rule for ", strings.Join(cmdAddFar, " "))
 	if err := gtpTunnel.CmdAddFAR(cmdAddFar); err != nil {
 		log.Fatal("[UE][GTP] Unable to create FAR ", err)
