@@ -23,6 +23,8 @@ func init() {
 
 func main() {
 
+	log.SetFormatter(&log.JSONFormatter{})
+
 	app := &cli.App{
 		Flags: []cli.Flag{
 			&cli.PathFlag{Name: "config", Usage: "Configuration file path. (Default: ./config/config.yml)"},
