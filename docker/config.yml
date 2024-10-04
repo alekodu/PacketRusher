@@ -39,5 +39,5 @@ ue:
     nea3: false
 
 amfif:
-  ip: "@NGAP_REMOTE_ADDR@"
-  port: 38412
+  - ip: "@NGAP_REMOTE_ADDR@"
+    port: 38412
