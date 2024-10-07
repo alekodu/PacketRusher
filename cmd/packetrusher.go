@@ -26,7 +26,6 @@ func main() {
 
 	log.SetFormatter(&log.JSONFormatter{
 		TimestampFormat: time.RFC3339Nano,
-		PrettyPrint:     true,
 	})
 
 	app := &cli.App{
