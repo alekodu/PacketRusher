@@ -4,6 +4,7 @@ import (
 	"my5G-RANTester/config"
 	"my5G-RANTester/internal/templates"
 	pcap "my5G-RANTester/internal/utils"
+	"time"
 
 	// "fmt"
 	"os"
@@ -23,7 +24,9 @@ func init() {
 
 func main() {
 
-	log.SetFormatter(&log.JSONFormatter{})
+	log.SetFormatter(&log.JSONFormatter{
+		TimestampFormat: time.RFC3339Nano,
+	})
 
 	app := &cli.App{
 		Flags: []cli.Flag{
