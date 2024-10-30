@@ -25,33 +25,30 @@ import (
 
 func CreateGnbs(count int, cfg config.Config, wg *sync.WaitGroup) map[string]*gnbCxt.GNBContext {
 	gnbs := make(map[string]*gnbCxt.GNBContext)
-	var err error
-	// Each gNB have their own IP address on both N2 and N3
-	// TODO: Limitation for now, these IPs must be sequential, eg:
+	// gNBs share the same IP addresses but use consecutive ports. Each gNB have their own port on both N2 and N3
+	// TODO: Limitation for now, these ports must be consecutive, eg:
 	// gnb[0].n2_ip = 192.168.2.10, gnb[0].n3_ip = 192.168.3.10
-	// gnb[1].n2_ip = 192.168.2.11, gnb[1].n3_ip = 192.168.3.11
+	// gnb[1].n2_ip = 192.168.2.10, gnb[1].n3_ip = 192.168.3.10
+	// gnb[0].n2_port = 9487, gnb[0].n3_port = 2152
+	// gnb[1].n2_port = 9488, gnb[1].n3_port = 2153
 	// ...
 	baseGnbId := cfg.GNodeB.PlmnList.GnbId
 	n2Ip := cfg.GNodeB.ControlIF.Ip
 	n3Ip := cfg.GNodeB.DataIF.Ip
+	n2Port := cfg.GNodeB.ControlIF.Port
+	n3Port := cfg.GNodeB.DataIF.Port
 	for i := 1; i <= count; i++ {
 		cfg.GNodeB.ControlIF.Ip = n2Ip
 		cfg.GNodeB.DataIF.Ip = n3Ip
+		cfg.GNodeB.ControlIF.Port = n2Port
+		cfg.GNodeB.DataIF.Port = n3Port
 
 		gnbs[cfg.GNodeB.PlmnList.GnbId] = gnb.InitGnb(cfg, wg)
 		wg.Add(1)
 
-		// TODO: We could find the interfaces where N2/N3 are
-		// and check that the generated IPs, still belong to the interfaces' subnet
 		cfg.GNodeB.PlmnList.GnbId = gnbIdGenerator(i, baseGnbId)
-		n2Ip, err = IncrementIP(n2Ip, "0.0.0.0/0")
-		if err != nil {
-			log.Fatal("[GNB][CONFIG] Error while allocating ip for N2: " + err.Error())
-		}
-		n3Ip, err = IncrementIP(n3Ip, "0.0.0.0/0")
-		if err != nil {
-			log.Fatal("[GNB][CONFIG] Error while allocating ip for N3: " + err.Error())
-		}
+		n2Port = n2Port + 1
+		n3Port = n3Port + 1
 	}
 	return gnbs
 }
