@@ -189,7 +189,7 @@ func SendHandoverNotify(gnb *context.GNBContext, ue *context.GNBUe) {
 }
 
 func TriggerXnHandover(oldGnb *context.GNBContext, newGnb *context.GNBContext, prUeId int64) {
-	log.Info("[GNB] Initiating Xn UE Handover")
+	log.Info("[GNB] Initiating Xn UE Handover for UE ", prUeId, ", from gNodeB ", oldGnb.GetGnbId(), " to ", newGnb.GetGnbId())
 
 	gnbUeContext, err := oldGnb.GetGnbUeByPrUeId(prUeId)
 	if err != nil {
