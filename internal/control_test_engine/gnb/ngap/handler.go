@@ -37,21 +37,21 @@ func HandlerDownlinkNasTransport(gnb *context.GNBContext, message *ngapType.NGAP
 
 		case ngapType.ProtocolIEIDAMFUENGAPID:
 			if ies.Value.AMFUENGAPID == nil {
-				log.Fatal("[GNB][NGAP] AMF UE NGAP ID is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()() AMF UE NGAP ID is missing")
 				// TODO SEND ERROR INDICATION
 			}
 			amfUeId = ies.Value.AMFUENGAPID.Value
 
 		case ngapType.ProtocolIEIDRANUENGAPID:
 			if ies.Value.RANUENGAPID == nil {
-				log.Fatal("[GNB][NGAP] RAN UE NGAP ID is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()( RAN UE NGAP ID is missing")
 				// TODO SEND ERROR INDICATION
 			}
 			ranUeId = ies.Value.RANUENGAPID.Value
 
 		case ngapType.ProtocolIEIDNASPDU:
 			if ies.Value.NASPDU == nil {
-				log.Fatal("[GNB][NGAP] NAS PDU is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()( NAS PDU is missing")
 				// TODO SEND ERROR INDICATION
 			}
 			messageNas = ies.Value.NASPDU.Value
@@ -60,7 +60,7 @@ func HandlerDownlinkNasTransport(gnb *context.GNBContext, message *ngapType.NGAP
 
 	ue := getUeFromContext(gnb, ranUeId, amfUeId)
 	if ue == nil {
-		log.Errorf("[GNB][NGAP] Cannot send DownlinkNASTransport message to UE with RANUEID %d as it does not know this UE", ranUeId)
+		log.Errorf("[GNB][NGAP](", gnb.GetGnbId(), ")()( Cannot send DownlinkNASTransport message to UE with RANUEID %d as it does not know this UE", ranUeId)
 		return
 	}
 
@@ -90,21 +90,21 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 
 		case ngapType.ProtocolIEIDAMFUENGAPID:
 			if ies.Value.AMFUENGAPID == nil {
-				log.Fatal("[GNB][NGAP] AMF UE NGAP ID is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()( AMF UE NGAP ID is missing")
 				// TODO SEND ERROR INDICATION
 			}
 			amfUeId = ies.Value.AMFUENGAPID.Value
 
 		case ngapType.ProtocolIEIDRANUENGAPID:
 			if ies.Value.RANUENGAPID == nil {
-				log.Fatal("[GNB][NGAP] RAN UE NGAP ID is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()( RAN UE NGAP ID is missing")
 				// TODO SEND ERROR INDICATION
 			}
 			ranUeId = ies.Value.RANUENGAPID.Value
 
 		case ngapType.ProtocolIEIDNASPDU:
 			if ies.Value.NASPDU == nil {
-				log.Info("[GNB][NGAP] NAS PDU is missing")
+				log.Info("[GNB][NGAP](", gnb.GetGnbId(), ")()( NAS PDU is missing")
 				// TODO SEND ERROR INDICATION
 			}
 			messageNas = ies.Value.NASPDU.Value
@@ -112,18 +112,18 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 		case ngapType.ProtocolIEIDSecurityKey:
 			// TODO using for create new security context between GNB and UE.
 			if ies.Value.SecurityKey == nil {
-				log.Fatal("[GNB][NGAP] Security-Key is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()( Security-Key is missing")
 			}
 			// securityKey = ies.Value.SecurityKey.Value.Bytes
 
 		case ngapType.ProtocolIEIDGUAMI:
 			if ies.Value.GUAMI == nil {
-				log.Fatal("[GNB][NGAP] GUAMI is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()( GUAMI is missing")
 			}
 
 		case ngapType.ProtocolIEIDAllowedNSSAI:
 			if ies.Value.AllowedNSSAI == nil {
-				log.Fatal("[GNB][NGAP] Allowed NSSAI is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()( Allowed NSSAI is missing")
 			}
 
 			valor := len(ies.Value.AllowedNSSAI.List)
@@ -149,7 +149,7 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 		case ngapType.ProtocolIEIDMobilityRestrictionList:
 			// that field is not mandatory.
 			if ies.Value.MobilityRestrictionList == nil {
-				log.Info("[GNB][NGAP] Mobility Restriction is missing")
+				log.Info("[GNB][NGAP](", gnb.GetGnbId(), ")()( Mobility Restriction is missing")
 				mobilityRestrict = "not informed"
 			} else {
 				mobilityRestrict = fmt.Sprintf("%x", ies.Value.MobilityRestrictionList.ServingPLMN.Value)
@@ -159,7 +159,7 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 			// that field is not mandatory.
 			// TODO using for mapping UE context
 			if ies.Value.MaskedIMEISV == nil {
-				log.Info("[GNB][NGAP] Masked IMEISV is missing")
+				log.Info("[GNB][NGAP](", gnb.GetGnbId(), ")()( Masked IMEISV is missing")
 				maskedImeisv = "not informed"
 			} else {
 				maskedImeisv = fmt.Sprintf("%x", ies.Value.MaskedIMEISV.Value.Bytes)
@@ -169,13 +169,13 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 			// TODO using for create new security context between UE and GNB.
 			// TODO algorithms for create new security context between UE and GNB.
 			if ies.Value.UESecurityCapabilities == nil {
-				log.Fatal("[GNB][NGAP] UE Security Capabilities is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()( UE Security Capabilities is missing")
 			}
 			ueSecurityCapabilities = ies.Value.UESecurityCapabilities
 
 		case ngapType.ProtocolIEIDPDUSessionResourceSetupListCxtReq:
 			if ies.Value.PDUSessionResourceSetupListCxtReq == nil {
-				log.Fatal("[GNB][NGAP] PDUSessionResourceSetupListCxtReq is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()( PDUSessionResourceSetupListCxtReq is missing")
 			}
 			pDUSessionResourceSetupListCxtReq = ies.Value.PDUSessionResourceSetupListCxtReq
 		}
@@ -184,20 +184,20 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 
 	ue := getUeFromContext(gnb, ranUeId, amfUeId)
 	if ue == nil {
-		log.Errorf("[GNB][NGAP] Cannot setup context for unknown UE	with RANUEID %d", ranUeId)
+		log.Errorf("[GNB][NGAP](", gnb.GetGnbId(), ")()( Cannot setup context for unknown UE	with RANUEID %d", ranUeId)
 		return
 	}
 	// create UE context.
 	ue.CreateUeContext(mobilityRestrict, maskedImeisv, sst, sd, ueSecurityCapabilities)
 
 	// show UE context.
-	log.Info("[GNB][UE] UE Context was created with successful")
-	log.Info("[GNB][UE] UE RAN ID ", ue.GetRanUeId())
-	log.Info("[GNB][UE] UE AMF ID ", ue.GetAmfUeId())
+	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE Context was created with successful")
+	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE RAN ID ", ue.GetRanUeId())
+	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE AMF ID ", ue.GetAmfUeId())
 	mcc, mnc := ue.GetUeMobility()
-	log.Info("[GNB][UE] UE Mobility Restrict --Plmn-- Mcc: ", mcc, " Mnc: ", mnc)
-	log.Info("[GNB][UE] UE Masked Imeisv: ", ue.GetUeMaskedImeiSv())
-	log.Info("[GNB][UE] Allowed Nssai-- Sst: ", sst, " Sd: ", sd)
+	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE Mobility Restrict --Plmn-- Mcc: ", mcc, " Mnc: ", mnc)
+	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE Masked Imeisv: ", ue.GetUeMaskedImeiSv())
+	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Allowed Nssai-- Sst: ", sst, " Sd: ", sd)
 
 	if messageNas != nil {
 		sender.SendToUe(ue, messageNas)
