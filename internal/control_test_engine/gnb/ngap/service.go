@@ -76,7 +76,7 @@ func GnbListen(amf *context.GNBAmf, gnb *context.GNBContext) {
 			break
 		}
 
-		log.Info("[GNB][SCTP] Receive message in ", info.Stream, " stream\n")
+		log.Info("[GNB][SCTP](", gnb.GetGnbId(), ")()() Receive message in ", info.Stream, " stream\n")
 
 		forwardData := make([]byte, n)
 		copy(forwardData, buf[:n])

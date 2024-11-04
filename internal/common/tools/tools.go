@@ -43,8 +43,8 @@ func CreateGnbs(count int, cfg config.Config, wg *sync.WaitGroup) map[string]*gn
 		cfg.GNodeB.ControlIF.Port = n2Port
 		cfg.GNodeB.DataIF.Port = n3Port
 
-		log.Debug("[GNB][", cfg.GNodeB.PlmnList.GnbId, "][CONFIG] Control Interface (N2) ", n2Ip, ":", n2Port)
-		log.Debug("[GNB][", cfg.GNodeB.PlmnList.GnbId, "][CONFIG] Data Interface (N3) ", n3Ip, ":", n3Port)
+		log.Debug("[GNB][CONFIG](", cfg.GNodeB.PlmnList.GnbId, ")()() Control Interface (N2) ", n2Ip, ":", n2Port)
+		log.Debug("[GNB][CONFIG](", cfg.GNodeB.PlmnList.GnbId, ")()() Data Interface (N3) ", n3Ip, ":", n3Port)
 
 		gnbs[cfg.GNodeB.PlmnList.GnbId] = gnb.InitGnb(cfg, wg)
 		wg.Add(1)

@@ -59,14 +59,14 @@ func NewUE(conf config.Config, id int, ueMgrChannel chan procedures.UeTesterMess
 			select {
 			case msg, open := <-ue.GetGnbTx():
 				if !open {
-					log.Warn("[UE][", ue.GetMsin(), "] Stopping UE as communication with gNB was closed")
+					log.Warn("[UE][]()()(", ue.GetPrUeId(), ") Stopping UE as communication with gNB was closed")
 					ue.SetGnbTx(nil)
 					break
 				}
 				gnbMsgHandler(msg, ue)
 			case msg, open := <-ueMgrChannel:
 				if !open {
-					log.Warn("[UE][", ue.GetMsin(), "] Stopping UE as communication with scenario was closed")
+					log.Warn("[UE][]()()(", ue.GetPrUeId(), ") Stopping UE as communication with scenario was closed")
 					loop = false
 					break
 				}
@@ -89,7 +89,7 @@ func gnbMsgHandler(msg context2.UEMessage, ue *context.UEContext) {
 		// Setup PDU Session
 		serviceGtp.SetupGtpInterface(ue, msg)
 	} else if msg.GNBRx != nil && msg.GNBTx != nil && msg.GNBInboundChannel != nil {
-		log.Info("[UE] gNodeB is telling us to use another gNodeB")
+		log.Info("[UE][]()()(", ue.GetPrUeId(), ") gNodeB is telling us to use another gNodeB")
 		previousGnbRx := ue.GetGnbRx()
 		ue.SetGnbInboundChannel(msg.GNBInboundChannel)
 		ue.SetGnbRx(msg.GNBRx)
@@ -97,7 +97,7 @@ func gnbMsgHandler(msg context2.UEMessage, ue *context.UEContext) {
 		previousGnbRx <- context2.UEMessage{ConnectionClosed: true}
 		close(previousGnbRx)
 	} else {
-		log.Error("[UE] Received unknown message from gNodeB", msg)
+		log.Error("[UE][]()()(", ue.GetPrUeId(), ") Received unknown message from gNodeB", msg)
 	}
 }
 
@@ -126,7 +126,7 @@ func ueMgrHandler(msg procedures.UeTesterMessage, ue *context.UEContext) bool {
 	case procedures.DestroyPDUSession:
 		pdu, err := ue.GetPduSession(msg.Param)
 		if err != nil {
-			log.Error("[UE] Cannot release unknown PDU Session ID ", msg.Param)
+			log.Error("[UE][]()()(", ue.GetPrUeId(), ") Cannot release unknown PDU Session ID ", msg.Param)
 			return loop
 		}
 		trigger.InitPduSessionRelease(ue, pdu)
@@ -150,7 +150,7 @@ func ueMgrHandler(msg procedures.UeTesterMessage, ue *context.UEContext) bool {
 			}
 		}
 	case procedures.Terminate:
-		log.Info("[UE] Terminating UE as requested")
+		log.Info("[UE][]()()(", ue.GetPrUeId(), ") Terminating UE as requested")
 		// If UE is registered
 		if ue.GetStateMM() == context.MM5G_REGISTERED {
 			// Release PDU Sessions
