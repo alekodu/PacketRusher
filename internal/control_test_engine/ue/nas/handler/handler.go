@@ -252,7 +252,7 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 		log.Warn("[UE][NAS][]()()(", ue.GetMsin(), ")ALLOWED NSSAI: SST: ", ue.Snssai.Sst, " SD: ", ue.Snssai.Sd)
 	}
 
-	log.Info("[UE][NAS][]()()(", ue.GetMsin(), ")UE 5G GUTI: ", ue.Get5gGuti())
+	log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") UE 5G GUTI: ", ue.Get5gGuti())
 
 	// getting NAS registration complete.
 	registrationComplete, err := mm_5gs.RegistrationComplete(ue)
