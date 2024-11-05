@@ -98,7 +98,7 @@ func (builder *InitialContextSetupResponseBuilder) SetPDUSessionResourceSetupLis
 	}
 
 	if len(PDUSessionResourceSetupListCxtRes.List) == 0 {
-		log.Info("[GNB][NGAP] No PDU Session to set up in InitialContextSetupResponse.")
+		log.Info("[GNB][NGAP][](", gnb.GetGnbId(), ")()() No PDU Session to set up in InitialContextSetupResponse.")
 		return builder
 	}
 	builder.ies.List = append(builder.ies.List, ie)

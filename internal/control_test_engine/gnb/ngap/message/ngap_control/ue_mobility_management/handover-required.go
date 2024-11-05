@@ -181,7 +181,7 @@ func (builder *HandoverRequiredBuilder) SetPduSessionResourceList(pduSessions [1
 	}
 
 	if len(pDUSessionResourceListHORqd.List) == 0 {
-		log.Error("[GNB][NGAP] No PDU Session to set up in InitialContextSetupResponse. NGAP Handover requires at least a PDU Session.")
+		log.Error("[GNB][NGAP][]()()() No PDU Session to set up in InitialContextSetupResponse. NGAP Handover requires at least a PDU Session.")
 		return builder
 	}
 
