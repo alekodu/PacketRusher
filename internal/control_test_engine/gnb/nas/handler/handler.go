@@ -17,7 +17,7 @@ func HandlerUeInitialized(ue *context.GNBUe, message []byte, gnb *context.GNBCon
 	// encode NAS message in NGAP.
 	ngap, err := nas_transport.SendInitialUeMessage(message, ue, gnb)
 	if err != nil {
-		log.Errorln("[GNB][NGAP] Error making initial UE message: ", err)
+		log.Errorln("[GNB][NGAP][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error making initial UE message: ", err)
 	}
 
 	// change state of UE.
@@ -27,7 +27,7 @@ func HandlerUeInitialized(ue *context.GNBUe, message []byte, gnb *context.GNBCon
 	conn := ue.GetSCTP()
 	err = sender.SendToAmF(ngap, conn)
 	if err != nil {
-		log.Errorln("[GNB][AMF] Error sending initial UE message: ", err)
+		log.Errorln("[GNB][AMF][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error sending initial UE message: ", err)
 	}
 }
 
@@ -35,14 +35,14 @@ func HandlerUeOngoing(ue *context.GNBUe, message []byte, gnb *context.GNBContext
 
 	ngap, err := nas_transport.SendUplinkNasTransport(message, ue, gnb)
 	if err != nil {
-		log.Errorln("[GNB][NGAP] Error making Uplink Nas Transport: ", err)
+		log.Errorln("[GNB][NGAP][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error making Uplink Nas Transport: ", err)
 	}
 
 	// Send Uplink Nas Transport
 	conn := ue.GetSCTP()
 	err = sender.SendToAmF(ngap, conn)
 	if err != nil {
-		log.Errorln("[GNB][AMF] Error sending Uplink Nas Transport: ", err)
+		log.Errorln("[GNB][AMF][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error sending Uplink Nas Transport: ", err)
 	}
 }
 
@@ -50,13 +50,13 @@ func HandlerUeReady(ue *context.GNBUe, message []byte, gnb *context.GNBContext) 
 
 	ngap, err := nas_transport.SendUplinkNasTransport(message, ue, gnb)
 	if err != nil {
-		log.Errorln("[GNB][NGAP] Error making Uplink Nas Transport: ", err)
+		log.Errorln("[GNB][NGAP][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error making Uplink Nas Transport: ", err)
 	}
 
 	// Send Uplink Nas Transport
 	conn := ue.GetSCTP()
 	err = sender.SendToAmF(ngap, conn)
 	if err != nil {
-		log.Errorln("[GNB][AMF] Error sending Uplink Nas Transport: ", err)
+		log.Errorln("[GNB][AMF][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error sending Uplink Nas Transport: ", err)
 	}
 }

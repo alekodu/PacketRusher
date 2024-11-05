@@ -43,8 +43,8 @@ func CreateGnbs(count int, cfg config.Config, wg *sync.WaitGroup) map[string]*gn
 		cfg.GNodeB.ControlIF.Port = n2Port
 		cfg.GNodeB.DataIF.Port = n3Port
 
-		log.Debug("[GNB][CONFIG](", cfg.GNodeB.PlmnList.GnbId, ")()() Control Interface (N2) ", n2Ip, ":", n2Port)
-		log.Debug("[GNB][CONFIG](", cfg.GNodeB.PlmnList.GnbId, ")()() Data Interface (N3) ", n3Ip, ":", n3Port)
+		log.Debug("[GNB][CONFIG][](", cfg.GNodeB.PlmnList.GnbId, ")()() Control Interface (N2) ", n2Ip, ":", n2Port)
+		log.Debug("[GNB][CONFIG][](", cfg.GNodeB.PlmnList.GnbId, ")()() Data Interface (N3) ", n3Ip, ":", n3Port)
 
 		gnbs[cfg.GNodeB.PlmnList.GnbId] = gnb.InitGnb(cfg, wg)
 		wg.Add(1)
@@ -78,7 +78,7 @@ func gnbIdGenerator(i int, gnbId string) string {
 
 	gnbId_int, err := strconv.ParseInt(gnbId, 16, 0)
 	if err != nil {
-		log.Fatal("[UE][CONFIG] Given gnbId is invalid")
+		log.Fatal("[UE][CONFIG][]()()() Given gnbId ", gnbId, " is invalid")
 	}
 	base := int(gnbId_int) + i
 
@@ -159,17 +159,21 @@ func SimulateSingleUE(simConfig UESimulationConfig, wg *sync.WaitGroup) {
 		for loop {
 			select {
 			case <-deregistrationChannel:
+				log.Info("[TESTER] TESTING DEREGISTRATION USING IMSI ", ueCfg.Ue.Msin, " UE")
 				if ueRx != nil {
 					ueRx <- procedures.UeTesterMessage{Type: procedures.Terminate}
 					ueRx = nil
 				}
 			case <-ngapHandoverChannel:
+				log.Info("[TESTER] TESTING NGAP HANDOVER FOR UE IMSI ", ueCfg.Ue.Msin)
 				trigger.TriggerNgapHandover(simConfig.Gnbs[gnbIdGen(nextHandoverId)], simConfig.Gnbs[gnbIdGen(nextHandoverId+1)], int64(ueId))
 				nextHandoverId++
 			case <-xnHandoverChannel:
+				log.Info("[TESTER] TESTING Xn HANDOVER FOR UE IMSI ", ueCfg.Ue.Msin)
 				trigger.TriggerXnHandover(simConfig.Gnbs[gnbIdGen(nextHandoverId)], simConfig.Gnbs[gnbIdGen(nextHandoverId+1)], int64(ueId))
 				nextHandoverId++
 			case <-idleChannel:
+				log.Info("[TESTER] TESTING SWITCHING TO IDLE USING IMSI ", ueCfg.Ue.Msin, " UE")
 				if ueRx != nil {
 					ueRx <- procedures.UeTesterMessage{Type: procedures.Idle}
 					// Channel creation to be transformed into a task ;-)
@@ -178,6 +182,7 @@ func SimulateSingleUE(simConfig UESimulationConfig, wg *sync.WaitGroup) {
 					}
 				}
 			case <-reconnectChannel:
+				log.Info("[TESTER] TESTING RECONNECT USING IMSI ", ueCfg.Ue.Msin, " UE")
 				if ueRx != nil {
 					ueRx <- procedures.UeTesterMessage{Type: procedures.ServiceRequest}
 				}
@@ -189,7 +194,7 @@ func SimulateSingleUE(simConfig UESimulationConfig, wg *sync.WaitGroup) {
 					}
 				}
 			case msg := <-ueTx:
-				log.Info("[UE] Switched from state ", state, " to state ", msg.StateChange)
+				log.Info("[UE][][]()()(", ueCfg.Ue.Msin, ") Switched from state ", state, " to state ", msg.StateChange)
 				switch msg.StateChange {
 				case ueCtx.MM5G_REGISTERED:
 					if !registered {
@@ -211,7 +216,7 @@ func IncrementMsin(i int, msin string) string {
 
 	msin_int, err := strconv.Atoi(msin)
 	if err != nil {
-		log.Fatal("[UE][CONFIG] Given MSIN is invalid")
+		log.Fatal("[UE][CONFIG][]()()() Given MSIN ", msin, " is invalid")
 	}
 	base := msin_int + (i - 1)
 
