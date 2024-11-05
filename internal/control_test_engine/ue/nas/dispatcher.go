@@ -207,13 +207,13 @@ func DispatchNas(ue *context.UEContext, message []byte) {
 
 func handleCause5GSM(cause5SMM *nasType.Cause5GSM) {
 	if cause5SMM != nil {
-		log.Error("[UE][NAS][]()()(", ue.GetMsin(), ") UE received a 5GSM Failure, cause: ", cause5GMMToString(cause5SMM.Octet))
+		log.Error("[UE][NAS][]()()() UE received a 5GSM Failure, cause: ", cause5GMMToString(cause5SMM.Octet))
 	}
 }
 
 func handleCause5GMM(cause5GMM *nasType.Cause5GMM) {
 	if cause5GMM != nil {
-		log.Error("[UE][NAS][]()()(", ue.GetMsin(), ") UE received a 5GMM Failure, cause: ", cause5GMMToString(cause5GMM.Octet))
+		log.Error("[UE][NAS][]()()() UE received a 5GMM Failure, cause: ", cause5GMMToString(cause5GMM.Octet))
 	}
 }
 
