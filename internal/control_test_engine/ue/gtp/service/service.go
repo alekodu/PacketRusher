@@ -171,13 +171,13 @@ func SetupGtpInterface(ue *context.UEContext, msg gnbContext.UEMessage) {
 	}
 	pduSession.SetTunRoute(route)
 
-	log.Info(fmt.Sprintf("[UE][GTP][]()()(", ue.GetMsin(), ")Interface %s has successfully been configured for UE %s", nameInf, ueIp))
+	log.Info(fmt.Sprintf("[UE][GTP][]()()(%s)Interface %s has successfully been configured for UE %s", ue.GetMsin(), nameInf, ueIp))
 	switch ue.TunnelMode {
 	case config.TunnelTun:
-		log.Info(fmt.Sprintf("[UE][GTP][]()()(", ue.GetMsin(), ")You can do traffic for this UE by binding to IP %s, eg:", ueIp))
-		log.Info(fmt.Sprintf("[UE][GTP][]()()(", ue.GetMsin(), ")iperf3 -B %s -c IPERF_SERVER -p PORT -t 9000", ueIp))
+		log.Info(fmt.Sprintf("[UE][GTP][]()()(%s)You can do traffic for this UE by binding to IP %s, eg:", ue.GetMsin(), ueIp))
+		log.Info(fmt.Sprintf("[UE][GTP][]()()(%s)iperf3 -B %s -c IPERF_SERVER -p PORT -t 9000", ue.GetMsin(), ueIp))
 	case config.TunnelVrf:
-		log.Info(fmt.Sprintf("[UE][GTP][]()()(", ue.GetMsin(), ")You can do traffic for this UE using VRF %s, eg:", vrfInf))
-		log.Info(fmt.Sprintf("[UE][GTP][]()()(", ue.GetMsin(), ")sudo ip vrf exec %s iperf3 -c IPERF_SERVER -p PORT -t 9000", vrfInf))
+		log.Info(fmt.Sprintf("[UE][GTP][]()()(%s)You can do traffic for this UE using VRF %s, eg:", ue.GetMsin(), vrfInf))
+		log.Info(fmt.Sprintf("[UE][GTP][]()()(%s)sudo ip vrf exec %s iperf3 -c IPERF_SERVER -p PORT -t 9000", ue.GetMsin(), vrfInf))
 	}
 }
