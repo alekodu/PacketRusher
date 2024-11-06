@@ -8,6 +8,7 @@ package ue_context_management
 import (
 	"my5G-RANTester/internal/control_test_engine/gnb/context"
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/message/ngap_control/pdu_session_management"
+	"my5G-RANTester/internal/control_test_engine/procedures"
 
 	"github.com/free5gc/ngap"
 	"github.com/free5gc/ngap/ngapType"
@@ -98,7 +99,7 @@ func (builder *InitialContextSetupResponseBuilder) SetPDUSessionResourceSetupLis
 	}
 
 	if len(PDUSessionResourceSetupListCxtRes.List) == 0 {
-		log.Info("[GNB][NGAP][](", gnb.GetGnbId(), ")()() No PDU Session to set up in InitialContextSetupResponse.")
+		log.Info("<", procedures.Registration, "><>[GNB][NGAP][](", gnb.GetGnbId(), ")()() No PDU Session to set up in InitialContextSetupResponse.")
 		return builder
 	}
 	builder.ies.List = append(builder.ies.List, ie)

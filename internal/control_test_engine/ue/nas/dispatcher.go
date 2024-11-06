@@ -5,6 +5,7 @@
 package nas
 
 import (
+	"my5G-RANTester/internal/control_test_engine/procedures"
 	"my5G-RANTester/internal/control_test_engine/ue/context"
 	"my5G-RANTester/internal/control_test_engine/ue/nas/handler"
 	"reflect"
@@ -163,7 +164,7 @@ func DispatchNas(ue *context.UEContext, message []byte) {
 
 	case nas.MsgTypeRegistrationAccept:
 		// handler registration accept.
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Receive Registration Accept")
+		log.Info("<", procedures.Registration, "><", ue.GetStateMM(), ">[UE][NAS][]()()(", ue.GetMsin(), ") Receive Registration Accept")
 		handler.HandlerRegistrationAccept(ue, m)
 
 	case nas.MsgTypeConfigurationUpdateCommand:

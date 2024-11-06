@@ -745,7 +745,7 @@ func (ue *UEContext) Terminate() {
 	ue.Unlock()
 	close(ue.scenarioChan)
 
-	log.Info("[UE] UE Terminated")
+	log.Info("[UE][][]()()(", ue.GetMsin(), ") UE Terminated")
 }
 
 func reverse(s string) string {

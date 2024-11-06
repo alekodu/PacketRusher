@@ -11,6 +11,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/gnb/context"
 	"my5G-RANTester/internal/control_test_engine/gnb/nas/message/sender"
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/trigger"
+	"my5G-RANTester/internal/control_test_engine/procedures"
 	"reflect"
 
 	_ "net"
@@ -184,20 +185,20 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 
 	ue := getUeFromContext(gnb, ranUeId, amfUeId)
 	if ue == nil {
-		log.Errorf("[GNB][NGAP](", gnb.GetGnbId(), ")()( Cannot setup context for unknown UE	with RANUEID %d", ranUeId)
+		log.Errorf("[GNB][NGAP](", gnb.GetGnbId(), ")()( Cannot setup context for unknown UE with RANUEID %d", ranUeId)
 		return
 	}
 	// create UE context.
 	ue.CreateUeContext(mobilityRestrict, maskedImeisv, sst, sd, ueSecurityCapabilities)
 
 	// show UE context.
-	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE Context was created with successful")
-	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE RAN ID ", ue.GetRanUeId())
-	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE AMF ID ", ue.GetAmfUeId())
+	log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE Context was created with successful")
+	log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE RAN ID ", ue.GetRanUeId())
+	log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE AMF ID ", ue.GetAmfUeId())
 	mcc, mnc := ue.GetUeMobility()
-	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE Mobility Restrict --Plmn-- Mcc: ", mcc, " Mnc: ", mnc)
-	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE Masked Imeisv: ", ue.GetUeMaskedImeiSv())
-	log.Info("[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Allowed Nssai-- Sst: ", sst, " Sd: ", sd)
+	log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE Mobility Restrict --Plmn-- Mcc: ", mcc, " Mnc: ", mnc)
+	log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UE Masked Imeisv: ", ue.GetUeMaskedImeiSv())
+	log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Allowed Nssai-- Sst: ", sst, " Sd: ", sd)
 
 	if messageNas != nil {
 		sender.SendToUe(ue, messageNas)
@@ -251,7 +252,7 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 	}
 
 	// send Initial Context Setup Response.
-	log.Info("[GNB][NGAP][AMF](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Send Initial Context Setup Response.")
+	log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][NGAP][AMF](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Send Initial Context Setup Response.")
 	trigger.SendInitialContextSetupResponse(ue, gnb)
 }
 
@@ -425,21 +426,21 @@ func HandlerPduSessionReleaseCommand(gnb *context.GNBContext, message *ngapType.
 		case ngapType.ProtocolIEIDAMFUENGAPID:
 
 			if ies.Value.AMFUENGAPID == nil {
-				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()() AMF UE ID is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()(){", procedures.DestroyPDUSession, "}{} AMF UE ID is missing")
 			}
 			amfUeId = ies.Value.AMFUENGAPID.Value
 
 		case ngapType.ProtocolIEIDRANUENGAPID:
 
 			if ies.Value.RANUENGAPID == nil {
-				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()() RAN UE ID is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()(){", procedures.DestroyPDUSession, "}{} RAN UE ID is missing")
 				// TODO SEND ERROR INDICATION
 			}
 			ranUeId = ies.Value.RANUENGAPID.Value
 
 		case ngapType.ProtocolIEIDNASPDU:
 			if ies.Value.NASPDU == nil {
-				log.Info("[GNB][NGAP](", gnb.GetGnbId(), ")()() NAS PDU is missing")
+				log.Info("[GNB][NGAP](", gnb.GetGnbId(), ")()(){", procedures.DestroyPDUSession, "}{} NAS PDU is missing")
 				// TODO SEND ERROR INDICATION
 			}
 			messageNas = ies.Value.NASPDU.Value
@@ -447,7 +448,7 @@ func HandlerPduSessionReleaseCommand(gnb *context.GNBContext, message *ngapType.
 		case ngapType.ProtocolIEIDPDUSessionResourceToReleaseListRelCmd:
 
 			if ies.Value.PDUSessionResourceToReleaseListRelCmd == nil {
-				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()() PDU SESSION RESOURCE SETUP LIST SU REQ is missing")
+				log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()(){", procedures.DestroyPDUSession, "}{} PDU SESSION RESOURCE SETUP LIST SU REQ is missing")
 			}
 			pDUSessionRessourceToReleaseListRelCmd := ies.Value.PDUSessionResourceToReleaseListRelCmd
 
@@ -459,18 +460,18 @@ func HandlerPduSessionReleaseCommand(gnb *context.GNBContext, message *ngapType.
 
 	ue := getUeFromContext(gnb, ranUeId, amfUeId)
 	if ue == nil {
-		log.Errorf("[GNB][NGAP](", gnb.GetGnbId(), ")()() Cannot release PDU Session for unknown UE With RANUEID %d", ranUeId)
+		log.Errorf("[GNB][NGAP](", gnb.GetGnbId(), ")()(){", procedures.DestroyPDUSession, "}{", ue.GetState(), "} Cannot release PDU Session for unknown UE With RANUEID %d", ranUeId)
 		return
 	}
 
 	for _, pduSessionId := range pduSessionIds {
 		pduSession, err := ue.GetPduSession(pduSessionId.Value)
 		if pduSession == nil || err != nil {
-			log.Error("[GNB][NGAP](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Unable to delete PDU Session ", pduSessionId.Value, " from UE as the PDU Session was not found. Ignoring.")
+			log.Error("[GNB][NGAP](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), "){", procedures.DestroyPDUSession, "}{", ue.GetState(), "} Unable to delete PDU Session ", pduSessionId.Value, " from UE as the PDU Session was not found. Ignoring.")
 			continue
 		}
 		ue.DeletePduSession(pduSessionId.Value)
-		log.Info("[GNB][NGAP](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Successfully deleted PDU Session ", pduSessionId.Value, " from UE Context")
+		log.Info("[GNB][NGAP](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), "){", procedures.DestroyPDUSession, "}{", ue.GetState(), "} Successfully deleted PDU Session ", pduSessionId.Value, " from UE Context")
 	}
 
 	trigger.SendPduSessionReleaseResponse(pduSessionIds, ue)

@@ -12,6 +12,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/message/ngap_control/ue_context_management"
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/message/ngap_control/ue_mobility_management"
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/message/sender"
+	"my5G-RANTester/internal/control_test_engine/procedures"
 
 	"github.com/free5gc/ngap/ngapType"
 	log "github.com/sirupsen/logrus"
@@ -56,19 +57,19 @@ func SendPduSessionReleaseResponse(pduSessionIds []ngapType.PDUSessionID, ue *co
 }
 
 func SendInitialContextSetupResponse(ue *context.GNBUe, gnb *context.GNBContext) {
-	log.Info("[GNB][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Initiating Initial Context Setup Response")
+	log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Initiating Initial Context Setup Response")
 
 	// send Initial Context Setup Response.
 	ngapMsg, err := ue_context_management.InitialContextSetupResponse(ue, gnb)
 	if err != nil {
-		log.Fatal("[GNB][NGAP](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error sending Initial Context Setup Response: ", err)
+		log.Fatal("<", procedures.Registration, "><", ue.GetState(), ">[GNB][NGAP](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error sending Initial Context Setup Response: ", err)
 	}
 
 	// Send Initial Context Setup Response.
 	conn := ue.GetSCTP()
 	err = sender.SendToAmF(ngapMsg, conn)
 	if err != nil {
-		log.Fatal("[GNB][AMF](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error sending Initial Context Setup Response: ", err)
+		log.Fatal("<", procedures.Registration, "><", ue.GetState(), ">[GNB][AMF](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Error sending Initial Context Setup Response: ", err)
 	}
 }
 
