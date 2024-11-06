@@ -17,8 +17,6 @@ const (
 	Kill              UeTesterMessageType = 5
 	Idle              UeTesterMessageType = 6
 	ServiceRequest    UeTesterMessageType = 7
-	XnHandover        UeTesterMessageType = 8
-	NgHandover        UeTesterMessageType = 9
 )
 
 type UeTesterMessage struct {

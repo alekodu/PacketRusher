@@ -4,32 +4,29 @@
  */
 package procedures
 
-type LogFieldType string
-
+// Log Fields
 const (
-	UeImsi      LogFieldType = "ueImsi"
-	UePrId      LogFieldType = "uePrId"
-	GnbId       LogFieldType = "gnbId"
-	ProcedureId LogFieldType = "procedureId"
-	UeStatus    LogFieldType = "ueStatus"
-	PduStatus   LogFieldType = "pduStatus"
-	Node        LogFieldType = "node"
-	Protocol    LogFieldType = "protocol"
+	PROCEDURE = "procedure"
+	STAGE     = "stage"
+	UE_PR_ID  = "uePrId"
+	GNB_ID    = "gnbId"
+	NODE      = "node"
+	PROTOCOL  = "protocol"
 )
 
-type NodeType string
-
+// Node Types
 const (
-	GnB NodeType = "GNB"
-	UE  NodeType = "UE"
-	AMF NodeType = "AMF"
+	TESTER = "TESTER"
+	GNB    = "GNB"
+	UE     = "UE"
+	AMF    = "AMF"
 )
 
-type ProtocolType string
-
+// Protocol Types
 const (
-	SCTP ProtocolType = "SCTP"
-	NGAP ProtocolType = "NGAP"
-	GTP  ProtocolType = "GTP"
-	NAS  ProtocolType = "NAS"
+	CONFIG = "CONFIG"
+	SCTP   = "SCTP"
+	NGAP   = "NGAP"
+	GTP    = "GTP"
+	NAS    = "NAS"
 )

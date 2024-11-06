@@ -32,6 +32,37 @@ type GNBUe struct {
 	context        Context
 	lock           sync.Mutex
 	newGnb         *GNBContext
+	procContext    ProcedureContext
+}
+
+// Procedure Types
+type ProcedureType string
+
+const (
+	NONE               ProcedureType = "None"
+	UE_ATTACH          ProcedureType = "UEAttach"
+	UE_DETTACH         ProcedureType = "UEDettach"
+	CREATE_PDU_SESSION ProcedureType = "CreatePDUSesion"
+	DELETE_PDU_SESSION ProcedureType = "DeletePDUSession"
+	UE_EXIT            ProcedureType = "UEExit"
+	UE_ENTER           ProcedureType = "UEEnter"
+	XN_HANDOVER        ProcedureType = "XnHandover"
+	N2_HANDOVER        ProcedureType = "N2Handover"
+)
+
+// Procedure Stages
+type ProcedureStage string
+
+const (
+	IDLE       ProcedureStage = "Idle"
+	INITIATED  ProcedureStage = "Initiated"
+	TERMINATED ProcedureStage = "Terminated"
+	CANCELLED  ProcedureStage = "Cancelled"
+)
+
+type ProcedureContext struct {
+	Type  ProcedureType
+	Stage ProcedureStage
 }
 
 type Context struct {

@@ -23,7 +23,7 @@ type InitialContextSetupResponseBuilder struct {
 func InitialContextSetupResponse(ue *context.GNBUe, gnb *context.GNBContext) ([]byte, error) {
 	return NewInitialContextSetupResponseBuilder().
 		SetAmfUeNgapId(ue.GetAmfUeId()).SetRanUeNgapId(ue.GetRanUeId()).
-		SetPDUSessionResourceSetupListCxtRes(gnb, ue.GetPduSessions()).
+		SetPDUSessionResourceSetupListCxtRes(gnb, ue).
 		Build()
 }
 
@@ -78,7 +78,11 @@ func (builder *InitialContextSetupResponseBuilder) SetRanUeNgapId(ranUeNgapID in
 	return builder
 }
 
-func (builder *InitialContextSetupResponseBuilder) SetPDUSessionResourceSetupListCxtRes(gnb *context.GNBContext, pduSessions [16]*context.GnbPDUSession) *InitialContextSetupResponseBuilder {
+func (builder *InitialContextSetupResponseBuilder) SetPDUSessionResourceSetupListCxtRes(gnb *context.GNBContext, ue *context.GNBUe) *InitialContextSetupResponseBuilder {
+
+	var pduSessions [16]*context.GnbPDUSession
+	pduSessions = ue.GetPduSessions()
+
 	// PDU Session Resource Setup List Cxt Res
 	ie := ngapType.InitialContextSetupResponseIEs{}
 	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceSetupListCxtRes
@@ -99,7 +103,14 @@ func (builder *InitialContextSetupResponseBuilder) SetPDUSessionResourceSetupLis
 	}
 
 	if len(PDUSessionResourceSetupListCxtRes.List) == 0 {
-		log.Info("<", procedures.Registration, "><>[GNB][NGAP][](", gnb.GetGnbId(), ")()() No PDU Session to set up in InitialContextSetupResponse.")
+		log.WithFields(log.Fields{
+			procedures.PROCEDURE: procedures.UE_ATTACH,
+			procedures.STAGE:     procedures.INITIATED,
+			procedures.UE_PR_ID:  ue.GetPrUeId(),
+			procedures.GNB_ID:    gnb.GetGnbId(),
+			procedures.NODE:      procedures.GNB,
+			procedures.PROTOCOL:  procedures.NGAP,
+		}).Info("No PDU Session to set up in InitialContextSetupResponse")
 		return builder
 	}
 	builder.ies.List = append(builder.ies.List, ie)
