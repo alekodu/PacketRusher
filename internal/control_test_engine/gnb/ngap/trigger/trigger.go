@@ -125,7 +125,14 @@ func SendAmfConfigurationUpdateAcknowledge(amf *context.GNBAmf) {
 }
 
 func SendNgSetupRequest(gnb *context.GNBContext, amf *context.GNBAmf) {
-	log.Info("[GNB][](", gnb.GetGnbId(), ")()() Initiating NG Setup Request ", gnb.GetGnbIp(), ":", gnb.GetGnbPort())
+	log.WithFields(log.Fields{
+		string(procedures.ProcedureId): procedures.Registration,
+		string(procedures.UeImsi):      "",
+		string(procedures.UePrId):      "",
+		string(procedures.GnbId):       gnb.GetGnbId(),
+		string(procedures.Node):        procedures.GnB,
+		string(procedures.Protocol):    procedures.NGAP,
+	}).Info("Initiating NG Setup Request ", gnb.GetGnbIp(), ":", gnb.GetGnbPort())
 
 	// send NG setup response.
 	ngapMsg, err := interface_management.NGSetupRequest(gnb, "PacketRusher")
