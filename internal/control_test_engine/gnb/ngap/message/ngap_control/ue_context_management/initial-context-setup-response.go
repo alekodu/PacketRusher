@@ -104,8 +104,8 @@ func (builder *InitialContextSetupResponseBuilder) SetPDUSessionResourceSetupLis
 
 	if len(PDUSessionResourceSetupListCxtRes.List) == 0 {
 		log.WithFields(log.Fields{
-			procedures.PROCEDURE: procedures.UE_ATTACH,
-			procedures.STAGE:     procedures.INITIATED,
+			procedures.PROCEDURE: ue.GetProcedureType(),
+			procedures.STAGE:     ue.GetProcedureStage(),
 			procedures.UE_PR_ID:  ue.GetPrUeId(),
 			procedures.GNB_ID:    gnb.GetGnbId(),
 			procedures.NODE:      procedures.GNB,

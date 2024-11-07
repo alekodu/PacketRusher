@@ -66,7 +66,7 @@ func HandlerDownlinkNasTransport(gnb *context.GNBContext, message *ngapType.NGAP
 	}
 
 	// send NAS message to UE.
-	sender.SendToUe(ue, messageNas)
+	sender.SendToUe(ue, gnb, messageNas)
 }
 
 func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapType.NGAPPDU) {
@@ -201,7 +201,7 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 	log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Allowed Nssai-- Sst: ", sst, " Sd: ", sd)
 
 	if messageNas != nil {
-		sender.SendToUe(ue, messageNas)
+		sender.SendToUe(ue, gnb, messageNas)
 	}
 
 	if pDUSessionResourceSetupListCxtReq != nil {
@@ -243,12 +243,12 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 			}
 
 			if pDUSessionResourceSetupItemCtxReq.NASPDU != nil {
-				sender.SendToUe(ue, pDUSessionResourceSetupItemCtxReq.NASPDU.Value)
+				sender.SendToUe(ue, gnb, pDUSessionResourceSetupItemCtxReq.NASPDU.Value)
 			}
 		}
 
 		msg := context.UEMessage{GNBPduSessions: ue.GetPduSessions(), GnbIp: gnb.GetN3GnbIp()}
-		sender.SendMessageToUe(ue, msg)
+		sender.SendMessageToUe(ue, gnb, msg)
 	}
 
 	// send Initial Context Setup Response.
@@ -397,13 +397,13 @@ func HandlerPduSessionResourceSetupRequest(gnb *context.GNBContext, message *nga
 		log.Info("[GNB][NGAP][UE](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") UPF Address: ", fmt.Sprintf("%d.%d.%d.%d", upfAddress[0], upfAddress[1], upfAddress[2], upfAddress[3]), " :2152")
 
 		// send NAS message to UE.
-		sender.SendToUe(ue, messageNas)
+		sender.SendToUe(ue, gnb, messageNas)
 
 		var pduSessions [16]*context.GnbPDUSession
 		pduSessions[0] = pduSession
 		msg := context.UEMessage{GnbIp: gnb.GetN3GnbIp(), GNBPduSessions: pduSessions}
 
-		sender.SendMessageToUe(ue, msg)
+		sender.SendMessageToUe(ue, gnb, msg)
 	}
 
 	// send PDU Session Resource Setup Response.
@@ -476,7 +476,7 @@ func HandlerPduSessionReleaseCommand(gnb *context.GNBContext, message *ngapType.
 
 	trigger.SendPduSessionReleaseResponse(pduSessionIds, ue)
 
-	sender.SendToUe(ue, messageNas)
+	sender.SendToUe(ue, gnb, messageNas)
 }
 
 func HandlerNgSetupResponse(amf *context.GNBAmf, gnb *context.GNBContext, message *ngapType.NGAPPDU) {
@@ -1008,7 +1008,7 @@ func HandlerPathSwitchRequestAcknowledge(gnb *context.GNBContext, message *ngapT
 
 		msg := context.UEMessage{GNBPduSessions: pduSessions, GnbIp: gnb.GetN3GnbIp()}
 
-		sender.SendMessageToUe(ue, msg)
+		sender.SendMessageToUe(ue, gnb, msg)
 	}
 
 	log.Info("[GNB][][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Handover completed successfully for UE ", ue.GetRanUeId())
@@ -1200,7 +1200,7 @@ func HandlerHandoverCommand(amf *context.GNBAmf, gnb *context.GNBContext, messag
 
 	msg := context.UEMessage{GNBRx: newGnbRx, GNBTx: newGnbTx, GNBInboundChannel: newGnb.GetInboundChannel()}
 
-	sender.SendMessageToUe(ue, msg)
+	sender.SendMessageToUe(ue, gnb, msg)
 }
 
 func HandlerPaging(gnb *context.GNBContext, message *ngapType.NGAPPDU) {

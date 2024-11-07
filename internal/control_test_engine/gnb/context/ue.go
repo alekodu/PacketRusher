@@ -61,8 +61,8 @@ const (
 )
 
 type ProcedureContext struct {
-	Type  ProcedureType
-	Stage ProcedureStage
+	Type  string
+	Stage string
 }
 
 type Context struct {
@@ -356,4 +356,20 @@ func (ue *GNBUe) GetAmfUeId() int64 {
 
 func (ue *GNBUe) SetAmfUeId(amfUeId int64) {
 	ue.amfUeNgapId = amfUeId
+}
+
+func (ue *GNBUe) GetProcedureType() string {
+	return ue.procContext.Type
+}
+
+func (ue *GNBUe) SetProcedureType(procType string) {
+	ue.procContext.Type = procType
+}
+
+func (ue *GNBUe) GetProcedureStage() string {
+	return ue.procContext.Stage
+}
+
+func (ue *GNBUe) SetProcedureStage(procStage string) {
+	ue.procContext.Stage = procStage
 }

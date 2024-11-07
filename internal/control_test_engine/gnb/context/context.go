@@ -19,6 +19,8 @@ import (
 	"github.com/ishidawataru/sctp"
 	log "github.com/sirupsen/logrus"
 	gtpv1 "github.com/wmnsk/go-gtp/gtpv1"
+
+	"my5G-RANTester/internal/utils"
 )
 
 type GNBContext struct {
@@ -179,7 +181,7 @@ func (gnb *GNBContext) GetGnbUe(ranUeId int64) (*GNBUe, error) {
 func (gnb *GNBContext) GetGnbUeByPrUeId(pRUeId int64) (*GNBUe, error) {
 	ue, err := gnb.prUePool.Load(pRUeId)
 	if !err {
-		return nil, fmt.Errorf("UE is not find in GNB PR UE POOL")
+		return nil, fmt.Errorf("UE is not found in GNB PR UE POOL")
 	}
 	return ue.(*GNBUe), nil
 }
@@ -187,7 +189,7 @@ func (gnb *GNBContext) GetGnbUeByPrUeId(pRUeId int64) (*GNBUe, error) {
 func (gnb *GNBContext) GetGnbUeByTeid(teid uint32) (*GNBUe, error) {
 	ue, err := gnb.teidPool.Load(teid)
 	if !err {
-		return nil, fmt.Errorf("UE is not find in GNB UE POOL using TEID")
+		return nil, fmt.Errorf("UE is not found in GNB UE POOL using TEID")
 	}
 	return ue.(*GNBUe), nil
 }
@@ -268,7 +270,7 @@ func (gnb *GNBContext) selectAmFByActive() *GNBAmf {
 func (gnb *GNBContext) getGnbAmf(amfId int64) (*GNBAmf, error) {
 	amf, err := gnb.amfPool.Load(amfId)
 	if !err {
-		return nil, fmt.Errorf("AMF is not find in GNB AMF POOL ")
+		return nil, fmt.Errorf("AMF is not found in GNB AMF POOL")
 	}
 	return amf.(*GNBAmf), nil
 }
@@ -497,15 +499,26 @@ func (gnb *GNBContext) Terminate() {
 
 	// close all connections
 	close(gnb.GetInboundChannel())
-	log.Info("[GNB][UE] NAS channel Terminated")
+	log.WithFields(log.Fields{
+		utils.GNB_ID:   gnb.GetGnbId(),
+		utils.NODE:     utils.GNB,
+		utils.PROTOCOL: utils.NAS,
+	}).Info("NAS channel Terminated")
 
 	n2 := gnb.GetN2()
 	if n2 != nil {
-		log.Info("[GNB][AMF] N2/TNLA Terminated")
+		log.WithFields(log.Fields{
+			utils.GNB_ID:   gnb.GetGnbId(),
+			utils.NODE:     utils.GNB,
+			utils.PROTOCOL: utils.NGAP,
+		}).Info("N2/TNLA Terminated")
 		n2.Close()
 	}
 
-	log.Info("GNB Terminated")
+	log.WithFields(log.Fields{
+		utils.GNB_ID: gnb.GetGnbId(),
+		utils.NODE:   utils.GNB,
+	}).Info("GNB Terminated")
 }
 
 func reverse(s string) string {

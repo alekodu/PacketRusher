@@ -10,7 +10,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/gnb/nas"
 	"my5G-RANTester/internal/control_test_engine/gnb/nas/message/sender"
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/trigger"
-	"my5G-RANTester/internal/control_test_engine/procedures"
+	"my5G-RANTester/internal/utils"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -30,7 +30,11 @@ func gnbListen(gnb *context.GNBContext) {
 				message.GNBTx <- context.UEMessage{PagedUEs: gnb.GetPagedUEs()}
 				close(message.GNBTx)
 			} else {
-				log.Info("<><>[GNB][](", gnb.GetGnbId(), ")()() Unable to give PagedUEs to UE, GNBTx is nill")
+				log.WithFields(log.Fields{
+					utils.GNB_ID:   gnb.GetGnbId(),
+					utils.NODE:     utils.GNB,
+					utils.PROTOCOL: utils.NAS,
+				}).Info("Unable to give PagedUEs to UE, GNBTx is nill")
 			}
 			continue
 		}
@@ -51,7 +55,7 @@ func gnbListen(gnb *context.GNBContext) {
 
 			// We enable the new PDU Session handed over to us
 			msg := context.UEMessage{GNBPduSessions: ue.GetPduSessions(), GnbIp: gnb.GetN3GnbIp()}
-			sender.SendMessageToUe(ue, msg)
+			sender.SendMessageToUe(ue, gnb, msg)
 
 			ue.SetStateReady()
 
@@ -60,20 +64,39 @@ func gnbListen(gnb *context.GNBContext) {
 			var err error
 			ue, err = gnb.NewGnBUe(message.GNBTx, message.GNBRx, message.PrUeId, message.Tmsi)
 			if ue == nil && err != nil {
-				log.Errorf("<><>[GNB][](", gnb.GetGnbId(), ")()() UE was not created succesfully: %s. Closing connection with UE.", err)
+				log.WithFields(log.Fields{
+					utils.UE_PR_ID: message.PrUeId,
+					utils.GNB_ID:   gnb.GetGnbId(),
+					utils.NODE:     utils.GNB,
+					utils.PROTOCOL: utils.NAS,
+				}).Errorf("UE was not created succesfully: %s. Closing connection with UE.", err)
 				close(message.GNBTx)
 				continue
 			}
 			if message.UEContext != nil && message.IsHandover {
 				// Xn Handover
-				log.Info("<", procedures.XnHandover, "><", ue.GetState(), ">[GNB][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Received incoming handover for UE from another gNodeB")
+				log.WithFields(log.Fields{
+					utils.PROCEDURE: ue.GetProcedureType(),
+					utils.STAGE:     ue.GetProcedureStage(),
+					utils.UE_PR_ID:  ue.GetPrUeId(),
+					utils.GNB_ID:    gnb.GetGnbId(),
+					utils.NODE:      utils.GNB,
+					utils.PROTOCOL:  utils.NAS,
+				}).Info("Received incoming handover for UE from another gNodeB")
 				ue.SetStateReady()
 				ue.CopyFromPreviousContext(message.UEContext)
 				trigger.SendPathSwitchRequest(gnb, ue)
 
 			} else {
 				// Usual first UE connection to a gNodeB
-				log.Info("<", procedures.Registration, "><", ue.GetState(), ">[GNB][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Received incoming connection from new UE")
+				log.WithFields(log.Fields{
+					utils.PROCEDURE: ue.GetProcedureType(),
+					utils.STAGE:     ue.GetProcedureStage(),
+					utils.UE_PR_ID:  ue.GetPrUeId(),
+					utils.GNB_ID:    gnb.GetGnbId(),
+					utils.NODE:      utils.GNB,
+					utils.PROTOCOL:  utils.NAS,
+				}).Info("Received incoming connection from new UE")
 				mcc, mnc := gnb.GetMccAndMnc()
 				message.GNBTx <- context.UEMessage{Mcc: mcc, Mnc: mnc}
 				ue.SetPduSessions(message.GNBPduSessions)
@@ -81,7 +104,11 @@ func gnbListen(gnb *context.GNBContext) {
 		}
 
 		if ue == nil {
-			log.Errorf("<><>[GNB][](", gnb.GetGnbId(), ")()() UE has not been created")
+			log.WithFields(log.Fields{
+				utils.UE_PR_ID: message.PrUeId,
+				utils.GNB_ID:   gnb.GetGnbId(),
+				utils.NODE:     utils.GNB,
+			}).Errorf("UE has not been created")
 			continue
 		}
 

@@ -13,6 +13,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/message/ngap_control/ue_mobility_management"
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/message/sender"
 	"my5G-RANTester/internal/control_test_engine/procedures"
+	"my5G-RANTester/internal/utils"
 
 	"github.com/free5gc/ngap/ngapType"
 	log "github.com/sirupsen/logrus"
@@ -126,18 +127,25 @@ func SendAmfConfigurationUpdateAcknowledge(amf *context.GNBAmf) {
 
 func SendNgSetupRequest(gnb *context.GNBContext, amf *context.GNBAmf) {
 	log.WithFields(log.Fields{
-		string(procedures.PROCEDURE): procedures.UE_ATTACH,
-		string(procedures.UE_IMSI):   "",
-		string(procedures.UE_PR_ID):  "",
-		string(procedures.GNB_ID):    gnb.GetGnbId(),
-		string(procedures.NODE):      procedures.GNB,
-		string(procedures.PROTOCOL):  procedures.NGAP,
+		utils.PROCEDURE: "",
+		utils.STAGE:     "",
+		utils.UE_PR_ID:  "",
+		utils.GNB_ID:    gnb.GetGnbId(),
+		utils.NODE:      utils.GNB,
+		utils.PROTOCOL:  utils.NGAP,
 	}).Info("Initiating NG Setup Request ", gnb.GetGnbIp(), ":", gnb.GetGnbPort())
 
 	// send NG setup response.
 	ngapMsg, err := interface_management.NGSetupRequest(gnb, "PacketRusher")
 	if err != nil {
-		log.Info("[GNB][NGAP](", gnb.GetGnbId(), ")()() Error sending NG Setup Request: ", err)
+		log.WithFields(log.Fields{
+			utils.PROCEDURE: "",
+			utils.STAGE:     "",
+			utils.UE_PR_ID:  "",
+			utils.GNB_ID:    gnb.GetGnbId(),
+			utils.NODE:      utils.GNB,
+			utils.PROTOCOL:  utils.NGAP,
+		}).Info("Error sending NG Setup Request: ", err)
 	}
 
 	conn := amf.GetSCTPConn()
@@ -210,7 +218,7 @@ func TriggerXnHandover(oldGnb *context.GNBContext, newGnb *context.GNBContext, p
 
 	msg := context.UEMessage{GNBRx: newGnbRx, GNBTx: newGnbTx, GNBInboundChannel: newGnb.GetInboundChannel()}
 
-	ueSender.SendMessageToUe(gnbUeContext, msg)
+	ueSender.SendMessageToUe(gnbUeContext, newGnb, msg)
 }
 
 func TriggerNgapHandover(oldGnb *context.GNBContext, newGnb *context.GNBContext, prUeId int64) {
