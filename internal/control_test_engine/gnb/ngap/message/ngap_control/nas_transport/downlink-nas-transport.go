@@ -6,6 +6,7 @@ package nas_transport
 
 import (
 	"fmt"
+	"my5G-RANTester/misc"
 	"time"
 
 	"github.com/free5gc/ngap"
@@ -56,12 +57,14 @@ func DownlinkNasTransportForConfigurationUpdateCommand(connN2 *sctp.SCTPConn, su
 
 		// worked fine.
 		c2 <- ngapMsg
-		log.WithFields(log.Fields{
-			"protocol":    "ngap",
-			"source":      "AMF",
-			"destination": "gNodeB",
-			"message":     "DownlinkNasTransport",
-		}).Info("Receiving message")
+
+		var logFields log.Fields
+
+		logFields[misc.NODE] = misc.GNB
+		logFields[misc.FUNCTION] = misc.MESSAG
+		logFields[misc.PROTOCOL] = misc.NGAP
+
+		log.WithFields(logFields).Info("Receiving message DownlinkNasTransport")
 	}()
 
 	// monitoring thread
