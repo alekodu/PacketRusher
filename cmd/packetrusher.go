@@ -4,6 +4,7 @@ import (
 	"my5G-RANTester/config"
 	"my5G-RANTester/internal/templates"
 	"my5G-RANTester/internal/utils"
+	"my5G-RANTester/misc"
 	"time"
 
 	// "fmt"
@@ -28,6 +29,11 @@ func main() {
 		TimestampFormat: time.RFC3339Nano,
 	})
 
+	var logFields log.Fields
+
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
+
 	app := &cli.App{
 		Flags: []cli.Flag{
 			&cli.PathFlag{Name: "config", Usage: "Configuration file path. (Default: ./config/config.yml)"},
@@ -46,36 +52,15 @@ func main() {
 					cfg := setConfig(*c)
 					tunnelEnabled := !c.Bool("disableTunnel")
 
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("PacketRusher version " + version)
-					log.Info("---------------------------------------")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("Starting test function: ", name)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("Number of UEs: ", 1)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("UE disableTunnel is ", !tunnelEnabled)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB Control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port, "~")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB Data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
+					log.WithFields(logFields).Info("PacketRusher version " + version)
+					log.WithFields(logFields).Info("---------------------------------------")
+					log.WithFields(logFields).Info("Starting test function: ", name)
+					log.WithFields(logFields).Info("Number of UEs: ", 1)
+					log.WithFields(logFields).Info("UE disableTunnel is ", !tunnelEnabled)
+					log.WithFields(logFields).Info("GNB Control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port, "~")
+					log.WithFields(logFields).Info("GNB Data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
 					for _, amf := range cfg.AMFs {
-						log.WithFields(log.Fields{
-							utils.NODE:     utils.TESTER,
-							utils.FUNCTION: utils.CONFIG,
-						}).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
+						log.WithFields(logFields).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
 					}
 					log.Info("---------------------------------------")
 
@@ -95,34 +80,16 @@ func main() {
 					name := "Testing an gnb attached with configuration"
 					cfg := setConfig(*c)
 
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("PacketRusher version " + version)
-					log.Info("---------------------------------------")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("Starting test function: ", name)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info(" Number of GNBs: ", 1)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB Control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port, "~")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB Data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
+					log.WithFields(logFields).Info("PacketRusher version " + version)
+					log.WithFields(logFields).Info("---------------------------------------")
+					log.WithFields(logFields).Info("Starting test function: ", name)
+					log.WithFields(logFields).Info(" Number of GNBs: ", 1)
+					log.WithFields(logFields).Info("GNB Control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port, "~")
+					log.WithFields(logFields).Info("GNB Data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
 					for _, amf := range cfg.AMFs {
-						log.WithFields(log.Fields{
-							utils.NODE:     utils.TESTER,
-							utils.FUNCTION: utils.CONFIG,
-						}).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
+						log.WithFields(logFields).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
 					}
-					log.Info("---------------------------------------")
+					log.WithFields(logFields).Info("---------------------------------------")
 					templates.TestAttachGnbWithConfiguration()
 					return nil
 				},
@@ -159,34 +126,16 @@ func main() {
 						return nil
 					}
 
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("PacketRusher version " + version)
-					log.Info("---------------------------------------")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("Starting test function: ", name)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("Number of UEs: ", numUes)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port, "~")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
+					log.WithFields(logFields).Info("PacketRusher version " + version)
+					log.WithFields(logFields).Info("---------------------------------------")
+					log.WithFields(logFields).Info("Starting test function: ", name)
+					log.WithFields(logFields).Info("Number of UEs: ", numUes)
+					log.WithFields(logFields).Info("GNB control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port, "~")
+					log.WithFields(logFields).Info("GNB data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
 					for _, amf := range cfg.AMFs {
-						log.WithFields(log.Fields{
-							utils.NODE:     utils.TESTER,
-							utils.FUNCTION: utils.CONFIG,
-						}).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
+						log.WithFields(logFields).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
 					}
-					log.Info("---------------------------------------")
+					log.WithFields(logFields).Info("---------------------------------------")
 
 					if c.IsSet("pcap") {
 						utils.CaptureTraffic(c.Path("pcap"))
@@ -247,38 +196,17 @@ func main() {
 					numRqs = c.Int("number-of-requests")
 					time = c.Int("time")
 
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("PacketRusher version " + version)
-					log.Info("---------------------------------------")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Warn("Starting test function: ", name)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Warn("Number of Requests per second in UE: ", numRqs)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
+					log.WithFields(logFields).Info("PacketRusher version " + version)
+					log.WithFields(logFields).Info("---------------------------------------")
+					log.WithFields(logFields).Warn("Starting test function: ", name)
+					log.WithFields(logFields).Warn("Number of Requests per second in UE: ", numRqs)
+					log.WithFields(logFields).Info("GNB control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port)
+					log.WithFields(logFields).Info("GNB data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
 					for _, amf := range cfg.AMFs {
-						log.WithFields(log.Fields{
-							utils.NODE:     utils.TESTER,
-							utils.FUNCTION: utils.CONFIG,
-						}).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
+						log.WithFields(logFields).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
 					}
-					log.Info("---------------------------------------")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Warn("Total of AMF Responses in the interval:", templates.TestRqsLoop(numRqs, time))
+					log.WithFields(logFields).Info("---------------------------------------")
+					log.WithFields(logFields).Warn("Total of AMF Responses in the interval:", templates.TestRqsLoop(numRqs, time))
 					return nil
 				},
 			},
@@ -297,34 +225,16 @@ func main() {
 					cfg := setConfig(*c)
 					time = c.Int("time")
 
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("PacketRusher version " + version)
-					log.Info("---------------------------------------")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Warn("Starting test function: ", name)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Warn("Interval of test: ", time, " seconds")
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB Control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port)
-					log.WithFields(log.Fields{
-						utils.NODE:     utils.TESTER,
-						utils.FUNCTION: utils.CONFIG,
-					}).Info("GNB Data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
+					log.WithFields(logFields).Info("PacketRusher version " + version)
+					log.WithFields(logFields).Info("---------------------------------------")
+					log.WithFields(logFields).Warn("Starting test function: ", name)
+					log.WithFields(logFields).Warn("Interval of test: ", time, " seconds")
+					log.WithFields(logFields).Info("GNB Control interface IP/Port: ", cfg.GNodeB.ControlIF.Ip, "/", cfg.GNodeB.ControlIF.Port)
+					log.WithFields(logFields).Info("GNB Data interface IP/Port: ", cfg.GNodeB.DataIF.Ip, "/", cfg.GNodeB.DataIF.Port)
 					for _, amf := range cfg.AMFs {
-						log.WithFields(log.Fields{
-							utils.NODE:     utils.TESTER,
-							utils.FUNCTION: utils.CONFIG,
-						}).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
+						log.WithFields(logFields).Info("AMF IP/Port: ", amf.Ip, "/", amf.Port)
 					}
-					log.Info("---------------------------------------")
+					log.WithFields(logFields).Info("---------------------------------------")
 					templates.TestAvailability(time)
 					return nil
 				},

@@ -10,7 +10,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/gnb/nas"
 	"my5G-RANTester/internal/control_test_engine/gnb/nas/message/sender"
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/trigger"
-	"my5G-RANTester/internal/utils"
+	"my5G-RANTester/misc"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -24,21 +24,21 @@ func gnbListen(gnb *context.GNBContext) {
 
 	var logFields log.Fields
 
-	logFields[utils.GNB_ID] = gnb.GetGnbId()
-	logFields[utils.NODE] = utils.GNB
-	logFields[utils.PROTOCOL] = utils.NAS
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.PROTOCOL] = misc.NAS
 
 	for {
 		message := <-ln
-		logFields[utils.UE_PR_ID] = message.PrUeId
-		logFields[utils.UE_TMSI] = message.Tmsi
+		logFields[misc.UE_PR_ID] = message.PrUeId
+		logFields[misc.UE_TMSI] = message.Tmsi
 
 		if message.FetchPagedUEs {
 			if message.GNBTx != nil {
 				message.GNBTx <- context.UEMessage{PagedUEs: gnb.GetPagedUEs()}
 				close(message.GNBTx)
 			} else {
-				logFields[utils.FUNCTION] = utils.MESSAG
+				logFields[misc.FUNCTION] = misc.MESSAG
 				log.WithFields(logFields).Info("Unable to give PagedUEs to UE, GNBTx is nill")
 			}
 			continue
@@ -70,7 +70,7 @@ func gnbListen(gnb *context.GNBContext) {
 			ue, err = gnb.NewGnBUe(message.GNBTx, message.GNBRx, message.PrUeId, message.Tmsi)
 
 			if ue == nil && err != nil {
-				logFields[utils.FUNCTION] = utils.SETUP
+				logFields[misc.FUNCTION] = misc.SETUP
 				log.WithFields(logFields).Errorf("UE was not created succesfully: %s. Closing connection with UE.", err)
 				close(message.GNBTx)
 				continue
@@ -80,9 +80,9 @@ func gnbListen(gnb *context.GNBContext) {
 				ue.SetProcedureType(string(context.XN_HANDOVER))
 				ue.SetProcedureStage(string(context.INITIATED))
 
-				logFields[utils.PROCEDURE] = ue.GetProcedureType()
-				logFields[utils.STAGE] = ue.GetProcedureStage()
-				logFields[utils.FUNCTION] = utils.MESSAG
+				logFields[misc.PROCEDURE] = ue.GetProcedureType()
+				logFields[misc.STAGE] = ue.GetProcedureStage()
+				logFields[misc.FUNCTION] = misc.MESSAG
 
 				log.WithFields(logFields).Info("Received incoming handover for UE from another gNodeB")
 				ue.SetStateReady()
@@ -92,9 +92,9 @@ func gnbListen(gnb *context.GNBContext) {
 			} else {
 				// Usual first UE connection to a gNodeB
 
-				logFields[utils.PROCEDURE] = ue.GetProcedureType()
-				logFields[utils.STAGE] = ue.GetProcedureStage()
-				logFields[utils.FUNCTION] = utils.MESSAG
+				logFields[misc.PROCEDURE] = ue.GetProcedureType()
+				logFields[misc.STAGE] = ue.GetProcedureStage()
+				logFields[misc.FUNCTION] = misc.MESSAG
 
 				log.WithFields(logFields).Info("Received incoming connection from new UE")
 				mcc, mnc := gnb.GetMccAndMnc()
@@ -115,14 +115,14 @@ func gnbListen(gnb *context.GNBContext) {
 
 func processingConn(ue *context.GNBUe, gnb *context.GNBContext) {
 	var logFields log.Fields
-	logFields[utils.UE_PR_ID] = ue.GetPrUeId()
-	logFields[utils.UE_TMSI] = ue.GetTMSI()
-	logFields[utils.PROCEDURE] = ue.GetProcedureType()
-	logFields[utils.STAGE] = ue.GetProcedureStage()
-	logFields[utils.GNB_ID] = gnb.GetGnbId()
-	logFields[utils.NODE] = utils.GNB
-	logFields[utils.PROTOCOL] = utils.NAS
-	logFields[utils.FUNCTION] = utils.MESSAG
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.FUNCTION] = misc.MESSAG
 
 	rx := ue.GetGnbRx()
 	for {
@@ -141,7 +141,7 @@ func processingConn(ue *context.GNBUe, gnb *context.GNBContext) {
 
 		// send to dispatch.
 		if message.ConnectionClosed {
-			logFields[utils.FUNCTION] = utils.SETUP
+			logFields[misc.FUNCTION] = misc.SETUP
 			log.WithFields(logFields).Info("Cleaning up context on current gNb")
 			gnbUeContext.SetStateDown()
 			if gnbUeContext.GetHandoverGnodeB() == nil {

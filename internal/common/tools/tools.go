@@ -13,7 +13,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/procedures"
 	"my5G-RANTester/internal/control_test_engine/ue"
 	ueCtx "my5G-RANTester/internal/control_test_engine/ue/context"
-	"my5G-RANTester/internal/utils"
+	"my5G-RANTester/misc"
 	"net"
 	"strconv"
 	"sync"
@@ -38,22 +38,20 @@ func CreateGnbs(count int, cfg config.Config, wg *sync.WaitGroup) map[string]*gn
 	n3Ip := cfg.GNodeB.DataIF.Ip
 	n2Port := cfg.GNodeB.ControlIF.Port
 	n3Port := cfg.GNodeB.DataIF.Port
+
+	var logFields log.Fields
+	logFields[misc.GNB_ID] = cfg.GNodeB.PlmnList.GnbId
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
+
 	for i := 1; i <= count; i++ {
 		cfg.GNodeB.ControlIF.Ip = n2Ip
 		cfg.GNodeB.DataIF.Ip = n3Ip
 		cfg.GNodeB.ControlIF.Port = n2Port
 		cfg.GNodeB.DataIF.Port = n3Port
 
-		log.WithFields(log.Fields{
-			utils.GNB_ID:   cfg.GNodeB.PlmnList.GnbId,
-			utils.NODE:     utils.TESTER,
-			utils.FUNCTION: utils.CONFIG,
-		}).Debug("Control Interface (N2) ", n2Ip, ":", n2Port)
-		log.WithFields(log.Fields{
-			utils.GNB_ID:   cfg.GNodeB.PlmnList.GnbId,
-			utils.NODE:     utils.TESTER,
-			utils.FUNCTION: utils.CONFIG,
-		}).Debug("Data Interface (N3) ", n3Ip, ":", n3Port)
+		log.WithFields(logFields).Debug("Control Interface (N2) ", n2Ip, ":", n2Port)
+		log.WithFields(logFields).Debug("Data Interface (N3) ", n3Ip, ":", n3Port)
 
 		gnbs[cfg.GNodeB.PlmnList.GnbId] = gnb.InitGnb(cfg, wg)
 		wg.Add(1)
@@ -86,12 +84,14 @@ func IncrementIP(origIP, cidr string) (string, error) {
 func gnbIdGenerator(i int, gnbId string) string {
 
 	gnbId_int, err := strconv.ParseInt(gnbId, 16, 0)
+
+	var logFields log.Fields
+	logFields[misc.GNB_ID] = gnbId
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
+
 	if err != nil {
-		log.WithFields(log.Fields{
-			utils.GNB_ID:   gnbId,
-			utils.NODE:     utils.GNB,
-			utils.FUNCTION: utils.CONFIG,
-		}).Fatal("Given gnbId ", gnbId, " is invalid")
+		log.WithFields(logFields).Fatal("Given gnbId ", gnbId, " is invalid")
 	}
 	base := int(gnbId_int) + i
 
@@ -126,11 +126,13 @@ func SimulateSingleUE(simConfig UESimulationConfig, wg *sync.WaitGroup) {
 	numGnb := len(simConfig.Gnbs)
 	ueCfg := simConfig.Cfg
 	ueCfg.Ue.Msin = IncrementMsin(simConfig.UeId, simConfig.Cfg.Ue.Msin)
-	log.WithFields(log.Fields{
-		utils.UE_MSIN:  ueCfg.Ue.Msin,
-		utils.NODE:     utils.TESTER,
-		utils.FUNCTION: utils.SIMUL,
-	}).Info("TESTING REGISTRATION USING IMSI ", ueCfg.Ue.Msin, " UE")
+
+	var logFields log.Fields
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.SIMUL
+	logFields[misc.UE_MSIN] = ueCfg.Ue.Msin
+
+	log.WithFields(logFields).Info("TESTING REGISTRATION USING IMSI ", ueCfg.Ue.Msin, " UE")
 
 	gnbIdGen := func(index int) string {
 		return gnbIdGenerator((simConfig.UeId+index)%numGnb, ueCfg.GNodeB.PlmnList.GnbId)
@@ -176,37 +178,21 @@ func SimulateSingleUE(simConfig UESimulationConfig, wg *sync.WaitGroup) {
 		for loop {
 			select {
 			case <-deregistrationChannel:
-				log.WithFields(log.Fields{
-					utils.UE_MSIN:  ueCfg.Ue.Msin,
-					utils.NODE:     utils.TESTER,
-					utils.FUNCTION: utils.SIMUL,
-				}).Info("TESTING DEREGISTRATION USING IMSI ", ueCfg.Ue.Msin, " UE")
+				log.WithFields(logFields).Info("TESTING DEREGISTRATION USING IMSI ", ueCfg.Ue.Msin, " UE")
 				if ueRx != nil {
 					ueRx <- procedures.UeTesterMessage{Type: procedures.Terminate}
 					ueRx = nil
 				}
 			case <-ngapHandoverChannel:
-				log.WithFields(log.Fields{
-					utils.UE_MSIN:  ueCfg.Ue.Msin,
-					utils.NODE:     utils.TESTER,
-					utils.FUNCTION: utils.SIMUL,
-				}).Info("TESTING NGAP HANDOVER FOR UE IMSI ", ueCfg.Ue.Msin)
+				log.WithFields(logFields).Info("TESTING NGAP HANDOVER FOR UE IMSI ", ueCfg.Ue.Msin)
 				trigger.TriggerNgapHandover(simConfig.Gnbs[gnbIdGen(nextHandoverId)], simConfig.Gnbs[gnbIdGen(nextHandoverId+1)], int64(ueId))
 				nextHandoverId++
 			case <-xnHandoverChannel:
-				log.WithFields(log.Fields{
-					utils.UE_MSIN:  ueCfg.Ue.Msin,
-					utils.NODE:     utils.TESTER,
-					utils.FUNCTION: utils.SIMUL,
-				}).Info("TESTING Xn HANDOVER FOR UE IMSI ", ueCfg.Ue.Msin)
+				log.WithFields(logFields).Info("TESTING Xn HANDOVER FOR UE IMSI ", ueCfg.Ue.Msin)
 				trigger.TriggerXnHandover(simConfig.Gnbs[gnbIdGen(nextHandoverId)], simConfig.Gnbs[gnbIdGen(nextHandoverId+1)], int64(ueId))
 				nextHandoverId++
 			case <-idleChannel:
-				log.WithFields(log.Fields{
-					utils.UE_MSIN:  ueCfg.Ue.Msin,
-					utils.NODE:     utils.TESTER,
-					utils.FUNCTION: utils.SIMUL,
-				}).Info("TESTING SWITCHING TO IDLE USING IMSI ", ueCfg.Ue.Msin, " UE")
+				log.WithFields(logFields).Info("TESTING SWITCHING TO IDLE USING IMSI ", ueCfg.Ue.Msin, " UE")
 				if ueRx != nil {
 					ueRx <- procedures.UeTesterMessage{Type: procedures.Idle}
 					// Channel creation to be transformed into a task ;-)
@@ -215,11 +201,7 @@ func SimulateSingleUE(simConfig UESimulationConfig, wg *sync.WaitGroup) {
 					}
 				}
 			case <-reconnectChannel:
-				log.WithFields(log.Fields{
-					utils.UE_MSIN:  ueCfg.Ue.Msin,
-					utils.NODE:     utils.TESTER,
-					utils.FUNCTION: utils.SIMUL,
-				}).Info("TESTING RECONNECT USING IMSI ", ueCfg.Ue.Msin, " UE")
+				log.WithFields(logFields).Info("TESTING RECONNECT USING IMSI ", ueCfg.Ue.Msin, " UE")
 				if ueRx != nil {
 					ueRx <- procedures.UeTesterMessage{Type: procedures.ServiceRequest}
 				}
@@ -231,11 +213,7 @@ func SimulateSingleUE(simConfig UESimulationConfig, wg *sync.WaitGroup) {
 					}
 				}
 			case msg := <-ueTx:
-				log.WithFields(log.Fields{
-					utils.UE_MSIN:  ueCfg.Ue.Msin,
-					utils.NODE:     utils.UE,
-					utils.FUNCTION: utils.SIMUL,
-				}).Info("Switched from state ", state, " to state ", msg.StateChange)
+				log.WithFields(logFields).Info("Switched from state ", state, " to state ", msg.StateChange)
 				switch msg.StateChange {
 				case ueCtx.MM5G_REGISTERED:
 					if !registered {
@@ -256,12 +234,14 @@ func SimulateSingleUE(simConfig UESimulationConfig, wg *sync.WaitGroup) {
 func IncrementMsin(i int, msin string) string {
 
 	msin_int, err := strconv.Atoi(msin)
+
+	var logFields log.Fields
+	logFields[misc.UE_MSIN] = msin
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
+
 	if err != nil {
-		log.WithFields(log.Fields{
-			utils.UE_MSIN:  msin,
-			utils.NODE:     utils.UE,
-			utils.FUNCTION: utils.CONFIG,
-		}).Fatal("Given MSIN ", msin, " is invalid")
+		log.WithFields(logFields).Fatal("Given MSIN ", msin, " is invalid")
 	}
 	base := msin_int + (i - 1)
 

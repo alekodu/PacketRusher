@@ -20,7 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	gtpv1 "github.com/wmnsk/go-gtp/gtpv1"
 
-	"my5G-RANTester/internal/utils"
+	"my5G-RANTester/misc"
 )
 
 type GNBContext struct {
@@ -497,28 +497,22 @@ func (gnb *GNBContext) GetMccAndMncInOctets() []byte {
 
 func (gnb *GNBContext) Terminate() {
 
+	var logFields log.Fields
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.FUNCTION] = misc.SETUP
+
 	// close all connections
 	close(gnb.GetInboundChannel())
-	log.WithFields(log.Fields{
-		utils.GNB_ID:   gnb.GetGnbId(),
-		utils.NODE:     utils.GNB,
-		utils.PROTOCOL: utils.NAS,
-	}).Info("NAS channel Terminated")
+	log.WithFields(logFields).Info("NAS channel Terminated")
 
 	n2 := gnb.GetN2()
 	if n2 != nil {
-		log.WithFields(log.Fields{
-			utils.GNB_ID:   gnb.GetGnbId(),
-			utils.NODE:     utils.GNB,
-			utils.PROTOCOL: utils.NGAP,
-		}).Info("N2/TNLA Terminated")
+		log.WithFields(logFields).Info("N2/TNLA Terminated")
 		n2.Close()
 	}
 
-	log.WithFields(log.Fields{
-		utils.GNB_ID: gnb.GetGnbId(),
-		utils.NODE:   utils.GNB,
-	}).Info("GNB Terminated")
+	log.WithFields(logFields).Info("GNB Terminated")
 }
 
 func reverse(s string) string {

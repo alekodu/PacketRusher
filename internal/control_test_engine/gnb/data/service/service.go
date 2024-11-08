@@ -7,7 +7,7 @@ package service
 import (
 	"fmt"
 	"my5G-RANTester/internal/control_test_engine/gnb/context"
-	"my5G-RANTester/internal/utils"
+	"my5G-RANTester/misc"
 	"net"
 
 	log "github.com/sirupsen/logrus"
@@ -42,31 +42,24 @@ func gatewayListen(gnb *context.GNBContext) {
 	buffer := make([]byte, 65535)
 	conn := gnb.GetUePlane()
 
+	var logFields log.Fields
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.FUNCTION] = misc.DATA
+
 	defer func() {
 		err := conn.Close()
 		if err != nil {
-			log.WithFields(log.Fields{
-				utils.GNB_ID:   gnb.GetGnbId(),
-				utils.NODE:     utils.GNB,
-				utils.FUNCTION: utils.DATA,
-			}).Info("[Error in closing GNB/UE tunnel\n")
+			log.WithFields(logFields).Info("[Error in closing GNB/UE tunnel\n")
 		}
 	}()
 
 	for {
 
 		ipHeader, payload, _, err := conn.ReadFrom(buffer)
-		// log.WithFields(log.Fields{
-		//		utils.GNB_ID:   gnb.GetGnbId(),
-		//		utils.NODE:     utils.GNB,
-		//		utils.FUNCTION: utils.DATA,
-		//	}).Info("Read %d bytes in GNB/UE tunnel", len(payload))
+		// log.WithFields(logFields).Info("Read %d bytes in GNB/UE tunnel", len(payload))
 		if err != nil {
-			log.WithFields(log.Fields{
-				utils.GNB_ID:   gnb.GetGnbId(),
-				utils.NODE:     utils.GNB,
-				utils.FUNCTION: utils.DATA,
-			}).Info("Error in reading from GNB/UE tunnel: %+v", err)
+			log.WithFields(logFields).Info("Error in reading from GNB/UE tunnel: %+v", err)
 			return
 		}
 
@@ -76,11 +69,7 @@ func gatewayListen(gnb *context.GNBContext) {
 		// find owner of  the Data Plane.
 		ue, err := gnb.GetGnbUeByIp(ipHeader.Src.String())
 		if err != nil || ue == nil {
-			log.WithFields(log.Fields{
-				utils.GNB_ID:   gnb.GetGnbId(),
-				utils.NODE:     utils.GNB,
-				utils.FUNCTION: utils.DATA,
-			}).Info("Invalid GNB UE IP. UE is not found in GNB UE IP Pool")
+			log.WithFields(logFields).Info("Invalid GNB UE IP. UE is not found in GNB UE IP Pool")
 			return
 		}
 
@@ -90,14 +79,20 @@ func gatewayListen(gnb *context.GNBContext) {
 
 func processingData(ue *context.GNBUe, gnb *context.GNBContext, packet []byte) {
 
+	var logFields log.Fields
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.GTP
+
 	// get GTP/UDP connection.
 	conn := gnb.GetN3Plane()
 	if conn == nil {
-		log.WithFields(log.Fields{
-			utils.GNB_ID:   gnb.GetGnbId(),
-			utils.NODE:     utils.GNB,
-			utils.PROTOCOL: utils.GTP,
-		}).Info("N3 GTP/UDP is not setting")
+		log.WithFields(logFields).Info("N3 GTP/UDP is not setting")
 		return
 	}
 
@@ -107,27 +102,15 @@ func processingData(ue *context.GNBUe, gnb *context.GNBContext, packet []byte) {
 	remote := fmt.Sprintf("%s:%d", gnb.GetUpfIp(), gnb.GetUpfPort())
 	upfAddr, err := net.ResolveUDPAddr("udp", remote)
 	if err != nil {
-		log.WithFields(log.Fields{
-			utils.GNB_ID:   gnb.GetGnbId(),
-			utils.NODE:     utils.GNB,
-			utils.PROTOCOL: utils.GTP,
-		}).Info("Error resolving UPF address for GTP/UDP tunnel", err)
+		log.WithFields(logFields).Info("Error resolving UPF address for GTP/UDP tunnel", err)
 		return
 	}
 
 	// send Data plane with GTP header.
 	_, err = conn.WriteToGTP(teidUplink, packet, upfAddr)
 	if err != nil {
-		log.WithFields(log.Fields{
-			utils.GNB_ID:   gnb.GetGnbId(),
-			utils.NODE:     utils.GNB,
-			utils.PROTOCOL: utils.GTP,
-		}).Info("Error sending data plane in GTP/UDP tunnel")
+		log.WithFields(logFields).Info("Error sending data plane in GTP/UDP tunnel")
 	}
 
-	//log.WithFields(log.Fields{
-	//		utils.GNB_ID:   gnb.GetGnbId(),
-	//		utils.NODE:     utils.GNB,
-	//		utils.PROTOCOL: utils.GTP,
-	//	}).Info("[GNB][GTP] Send %d bytes in GNB->UPF tunnel\n", n)
+	//log.WithFields(logFields).Info("[GNB][GTP] Send %d bytes in GNB->UPF tunnel\n", n)
 }

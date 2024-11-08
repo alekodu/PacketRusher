@@ -5,6 +5,7 @@
 package config
 
 import (
+	"my5G-RANTester/misc"
 	"net"
 	"os"
 	"path"
@@ -33,7 +34,7 @@ var config *Config
 type Config struct {
 	GNodeB GNodeB `yaml:"gnodeb"`
 	Ue     Ue     `yaml:"ue"`
-	AMFs   []*AMF    `yaml:"amfif"`
+	AMFs   []*AMF `yaml:"amfif"`
 	Logs   Logs   `yaml:"logs"`
 }
 
@@ -120,26 +121,34 @@ func LoadDefaultConfig() Config {
 }
 
 func Load(configPath string) Config {
+	var logFields log.Fields
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
+
 	c := readConfig(configPath)
 	config = &c
 
 	setLogLevel(*config)
-	log.Info("Loaded config at: ", configPath)
+	log.WithFields(logFields).Info("Loaded config at: ", configPath)
 	return *config
 }
 
 func readConfig(configPath string) Config {
+	var logFields log.Fields
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
+
 	var cfg = Config{}
 	f, err := os.Open(configPath)
 	if err != nil {
-		log.Fatal("Could not open config at \"", configPath, "\". ", err.Error())
+		log.WithFields(logFields).Fatal("Could not open config at \"", configPath, "\". ", err.Error())
 	}
 	defer f.Close()
 
 	decoder := yaml.NewDecoder(f)
 	err = decoder.Decode(&cfg)
 	if err != nil {
-		log.Fatal("Could not unmarshal yaml config at \"", configPath, "\". ", err.Error())
+		log.WithFields(logFields).Fatal("Could not unmarshal yaml config at \"", configPath, "\". ", err.Error())
 	}
 
 	for i, amf := range cfg.AMFs {
@@ -153,32 +162,40 @@ func readConfig(configPath string) Config {
 }
 
 func resolvHost(hostType string, hostOrIp string) string {
+	var logFields log.Fields
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
+
 	ips, err := net.LookupIP(hostOrIp)
 	if err != nil {
-		log.Errorf("Unable to resolve %s in configuration for %s, make sure it is an IP address or a domain that can be resolved to an IPv4", hostOrIp, hostType)
-		log.Fatal(err)
+		log.WithFields(logFields).Errorf("Unable to resolve %s in configuration for %s, make sure it is an IP address or a domain that can be resolved to an IPv4", hostOrIp, hostType)
+		log.WithFields(logFields).Fatal(err)
 	}
 	for _, ip := range ips {
 		if ip.To4() == nil {
-			log.Warnf("Skipping %s for host %s as %s, as it is not an IPv4", ip, hostOrIp, hostType)
+			log.WithFields(logFields).Warnf("Skipping %s for host %s as %s, as it is not an IPv4", ip, hostOrIp, hostType)
 		} else {
-			log.Infof("Selecting %s for host %s as %s", ip, hostOrIp, hostType)
+			log.WithFields(logFields).Infof("Selecting %s for host %s as %s", ip, hostOrIp, hostType)
 			return ip.String()
 		}
 	}
-	log.Fatalf("No suitable IP address found as host %s, for %s", hostOrIp, hostType)
+	log.WithFields(logFields).Fatalf("No suitable IP address found as host %s, for %s", hostOrIp, hostType)
 	return ""
 }
 
 func getDefautlConfigPath() string {
+	var logFields log.Fields
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
+
 	b, err := os.Executable()
 	if err != nil {
-		log.Fatal("Failed to get executable path. ", err.Error())
+		log.WithFields(logFields).Fatal("Failed to get executable path. ", err.Error())
 	}
 	dir := path.Dir(b)
 	configPath, err := filepath.Abs(dir + "/config/config.yml")
 	if err != nil {
-		log.Fatal("Could not find defautl config at \"", configPath, "\". ", err.Error())
+		log.WithFields(logFields).Fatal("Could not find defautl config at \"", configPath, "\". ", err.Error())
 	}
 	return configPath
 }
