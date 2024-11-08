@@ -10,6 +10,7 @@ const (
 	STAGE     = "stage"
 	UE_PR_ID  = "uePrId"
 	UE_MSIN   = "ueMsin"
+	UE_TMSI   = "ueTmsi"
 	GNB_ID    = "gnbId"
 	NODE      = "node"
 	PROTOCOL  = "protocol"
@@ -37,5 +38,7 @@ const (
 const (
 	CONFIG = "CONFIG"
 	SIMUL  = "SIMUL"
+	SETUP  = "SETUP"
+	MESSAG = "MESSAG"
 	DATA   = "DATA"
 )

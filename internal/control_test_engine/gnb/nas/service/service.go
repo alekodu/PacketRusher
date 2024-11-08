@@ -22,19 +22,24 @@ func InitServer(gnb *context.GNBContext) {
 func gnbListen(gnb *context.GNBContext) {
 	ln := gnb.GetInboundChannel()
 
+	var logFields log.Fields
+
+	logFields[utils.GNB_ID] = gnb.GetGnbId()
+	logFields[utils.NODE] = utils.GNB
+	logFields[utils.PROTOCOL] = utils.NAS
+
 	for {
 		message := <-ln
+		logFields[utils.UE_PR_ID] = message.PrUeId
+		logFields[utils.UE_TMSI] = message.Tmsi
 
 		if message.FetchPagedUEs {
 			if message.GNBTx != nil {
 				message.GNBTx <- context.UEMessage{PagedUEs: gnb.GetPagedUEs()}
 				close(message.GNBTx)
 			} else {
-				log.WithFields(log.Fields{
-					utils.GNB_ID:   gnb.GetGnbId(),
-					utils.NODE:     utils.GNB,
-					utils.PROTOCOL: utils.NAS,
-				}).Info("Unable to give PagedUEs to UE, GNBTx is nill")
+				logFields[utils.FUNCTION] = utils.MESSAG
+				log.WithFields(logFields).Info("Unable to give PagedUEs to UE, GNBTx is nill")
 			}
 			continue
 		}
@@ -63,40 +68,35 @@ func gnbListen(gnb *context.GNBContext) {
 		} else {
 			var err error
 			ue, err = gnb.NewGnBUe(message.GNBTx, message.GNBRx, message.PrUeId, message.Tmsi)
+
 			if ue == nil && err != nil {
-				log.WithFields(log.Fields{
-					utils.UE_PR_ID: message.PrUeId,
-					utils.GNB_ID:   gnb.GetGnbId(),
-					utils.NODE:     utils.GNB,
-					utils.PROTOCOL: utils.NAS,
-				}).Errorf("UE was not created succesfully: %s. Closing connection with UE.", err)
+				logFields[utils.FUNCTION] = utils.SETUP
+				log.WithFields(logFields).Errorf("UE was not created succesfully: %s. Closing connection with UE.", err)
 				close(message.GNBTx)
 				continue
 			}
 			if message.UEContext != nil && message.IsHandover {
 				// Xn Handover
-				log.WithFields(log.Fields{
-					utils.PROCEDURE: ue.GetProcedureType(),
-					utils.STAGE:     ue.GetProcedureStage(),
-					utils.UE_PR_ID:  ue.GetPrUeId(),
-					utils.GNB_ID:    gnb.GetGnbId(),
-					utils.NODE:      utils.GNB,
-					utils.PROTOCOL:  utils.NAS,
-				}).Info("Received incoming handover for UE from another gNodeB")
+				ue.SetProcedureType(string(context.XN_HANDOVER))
+				ue.SetProcedureStage(string(context.INITIATED))
+
+				logFields[utils.PROCEDURE] = ue.GetProcedureType()
+				logFields[utils.STAGE] = ue.GetProcedureStage()
+				logFields[utils.FUNCTION] = utils.MESSAG
+
+				log.WithFields(logFields).Info("Received incoming handover for UE from another gNodeB")
 				ue.SetStateReady()
 				ue.CopyFromPreviousContext(message.UEContext)
 				trigger.SendPathSwitchRequest(gnb, ue)
 
 			} else {
 				// Usual first UE connection to a gNodeB
-				log.WithFields(log.Fields{
-					utils.PROCEDURE: ue.GetProcedureType(),
-					utils.STAGE:     ue.GetProcedureStage(),
-					utils.UE_PR_ID:  ue.GetPrUeId(),
-					utils.GNB_ID:    gnb.GetGnbId(),
-					utils.NODE:      utils.GNB,
-					utils.PROTOCOL:  utils.NAS,
-				}).Info("Received incoming connection from new UE")
+
+				logFields[utils.PROCEDURE] = ue.GetProcedureType()
+				logFields[utils.STAGE] = ue.GetProcedureStage()
+				logFields[utils.FUNCTION] = utils.MESSAG
+
+				log.WithFields(logFields).Info("Received incoming connection from new UE")
 				mcc, mnc := gnb.GetMccAndMnc()
 				message.GNBTx <- context.UEMessage{Mcc: mcc, Mnc: mnc}
 				ue.SetPduSessions(message.GNBPduSessions)
@@ -104,11 +104,7 @@ func gnbListen(gnb *context.GNBContext) {
 		}
 
 		if ue == nil {
-			log.WithFields(log.Fields{
-				utils.UE_PR_ID: message.PrUeId,
-				utils.GNB_ID:   gnb.GetGnbId(),
-				utils.NODE:     utils.GNB,
-			}).Errorf("UE has not been created")
+			log.WithFields(logFields).Errorf("UE has not been created")
 			continue
 		}
 
@@ -118,12 +114,22 @@ func gnbListen(gnb *context.GNBContext) {
 }
 
 func processingConn(ue *context.GNBUe, gnb *context.GNBContext) {
+	var logFields log.Fields
+	logFields[utils.UE_PR_ID] = ue.GetPrUeId()
+	logFields[utils.UE_TMSI] = ue.GetTMSI()
+	logFields[utils.PROCEDURE] = ue.GetProcedureType()
+	logFields[utils.STAGE] = ue.GetProcedureStage()
+	logFields[utils.GNB_ID] = gnb.GetGnbId()
+	logFields[utils.NODE] = utils.GNB
+	logFields[utils.PROTOCOL] = utils.NAS
+	logFields[utils.FUNCTION] = utils.MESSAG
+
 	rx := ue.GetGnbRx()
 	for {
 		message, done := <-rx
 		gnbUeContext, err := gnb.GetGnbUe(ue.GetRanUeId())
 		if (gnbUeContext == nil || err != nil) && done {
-			log.Error("<><", ue.GetState(), ">[GNB][NAS](", gnb.GetAmfPool(), ")()(", ue.GetPrUeId(), ") Ignoring message from UE ", ue.GetRanUeId(), " as UE Context was cleaned as requested by AMF.")
+			log.WithFields(logFields).Error("Ignoring message from UE ", ue.GetRanUeId(), " as UE Context was cleaned as requested by AMF.")
 			break
 		}
 		if !done {
@@ -135,7 +141,8 @@ func processingConn(ue *context.GNBUe, gnb *context.GNBContext) {
 
 		// send to dispatch.
 		if message.ConnectionClosed {
-			log.Info("<><", ue.GetState(), ">[GNB][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Cleaning up context on current gNb")
+			logFields[utils.FUNCTION] = utils.SETUP
+			log.WithFields(logFields).Info("Cleaning up context on current gNb")
 			gnbUeContext.SetStateDown()
 			if gnbUeContext.GetHandoverGnodeB() == nil {
 				// We do not clean the context if it's a NGAP Handover, as AMF will request the context clean-up
@@ -147,7 +154,7 @@ func processingConn(ue *context.GNBUe, gnb *context.GNBContext) {
 		} else if message.Idle {
 			trigger.SendUeContextReleaseRequest(ue)
 		} else {
-			log.Error("<><", ue.GetState(), ">[GNB][](", gnb.GetGnbId(), ")()(", ue.GetPrUeId(), ") Received unknown message from UE")
+			log.Error("Received unknown message from UE")
 		}
 	}
 }
