@@ -14,7 +14,7 @@ import (
 func SendToUe(ue *context.GNBUe, gnb *context.GNBContext, message []byte) {
 	ue.Lock()
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 	logFields[misc.NODE] = misc.GNB
@@ -36,7 +36,7 @@ func SendToUe(ue *context.GNBUe, gnb *context.GNBContext, message []byte) {
 func SendMessageToUe(ue *context.GNBUe, gnb *context.GNBContext, message context.UEMessage) {
 	ue.Lock()
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 	logFields[misc.NODE] = misc.GNB

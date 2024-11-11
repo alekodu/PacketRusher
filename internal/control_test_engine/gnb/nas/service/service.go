@@ -22,7 +22,7 @@ func InitServer(gnb *context.GNBContext) {
 func gnbListen(gnb *context.GNBContext) {
 	ln := gnb.GetInboundChannel()
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 
 	logFields[misc.GNB_ID] = gnb.GetGnbId()
 	logFields[misc.NODE] = misc.GNB
@@ -114,7 +114,7 @@ func gnbListen(gnb *context.GNBContext) {
 }
 
 func processingConn(ue *context.GNBUe, gnb *context.GNBContext) {
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_TMSI] = ue.GetTMSI()
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()

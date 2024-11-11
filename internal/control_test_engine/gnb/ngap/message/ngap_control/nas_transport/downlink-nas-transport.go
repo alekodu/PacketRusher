@@ -58,7 +58,7 @@ func DownlinkNasTransportForConfigurationUpdateCommand(connN2 *sctp.SCTPConn, su
 		// worked fine.
 		c2 <- ngapMsg
 
-		var logFields log.Fields
+		logFields := make(log.Fields)
 
 		logFields[misc.NODE] = misc.GNB
 		logFields[misc.FUNCTION] = misc.MESSAG

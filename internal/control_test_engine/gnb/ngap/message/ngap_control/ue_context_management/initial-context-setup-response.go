@@ -8,7 +8,7 @@ package ue_context_management
 import (
 	"my5G-RANTester/internal/control_test_engine/gnb/context"
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/message/ngap_control/pdu_session_management"
-	"my5G-RANTester/internal/control_test_engine/procedures"
+	"my5G-RANTester/misc"
 
 	"github.com/free5gc/ngap"
 	"github.com/free5gc/ngap/ngapType"
@@ -83,6 +83,8 @@ func (builder *InitialContextSetupResponseBuilder) SetPDUSessionResourceSetupLis
 	var pduSessions [16]*context.GnbPDUSession
 	pduSessions = ue.GetPduSessions()
 
+	logFields := make(log.Fields)
+
 	// PDU Session Resource Setup List Cxt Res
 	ie := ngapType.InitialContextSetupResponseIEs{}
 	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceSetupListCxtRes
@@ -102,15 +104,17 @@ func (builder *InitialContextSetupResponseBuilder) SetPDUSessionResourceSetupLis
 		PDUSessionResourceSetupListCxtRes.List = append(PDUSessionResourceSetupListCxtRes.List, pDUSessionResourceSetupItemCxtRes)
 	}
 
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
+	logFields[misc.FUNCTION] = misc.SETUP
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	if len(PDUSessionResourceSetupListCxtRes.List) == 0 {
-		log.WithFields(log.Fields{
-			procedures.PROCEDURE: ue.GetProcedureType(),
-			procedures.STAGE:     ue.GetProcedureStage(),
-			procedures.UE_PR_ID:  ue.GetPrUeId(),
-			procedures.GNB_ID:    gnb.GetGnbId(),
-			procedures.NODE:      procedures.GNB,
-			procedures.PROTOCOL:  procedures.NGAP,
-		}).Info("No PDU Session to set up in InitialContextSetupResponse")
+		log.WithFields(logFields).Info("No PDU Session to set up in InitialContextSetupResponse")
 		return builder
 	}
 	builder.ies.List = append(builder.ies.List, ie)

@@ -42,7 +42,7 @@ func gatewayListen(gnb *context.GNBContext) {
 	buffer := make([]byte, 65535)
 	conn := gnb.GetUePlane()
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnb.GetGnbId()
 	logFields[misc.FUNCTION] = misc.DATA
@@ -79,7 +79,7 @@ func gatewayListen(gnb *context.GNBContext) {
 
 func processingData(ue *context.GNBUe, gnb *context.GNBContext, packet []byte) {
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 	logFields[misc.NODE] = misc.GNB

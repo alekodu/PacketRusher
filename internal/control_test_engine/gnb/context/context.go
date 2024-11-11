@@ -497,7 +497,7 @@ func (gnb *GNBContext) GetMccAndMncInOctets() []byte {
 
 func (gnb *GNBContext) Terminate() {
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnb.GetGnbId()
 	logFields[misc.FUNCTION] = misc.SETUP

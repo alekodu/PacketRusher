@@ -15,7 +15,7 @@ import (
 
 func HandlerUeInitialized(ue *context.GNBUe, message []byte, gnb *context.GNBContext) {
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 	logFields[misc.NODE] = misc.GNB
@@ -44,7 +44,7 @@ func HandlerUeInitialized(ue *context.GNBUe, message []byte, gnb *context.GNBCon
 
 func HandlerUeOngoing(ue *context.GNBUe, message []byte, gnb *context.GNBContext) {
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 	logFields[misc.NODE] = misc.GNB
@@ -69,7 +69,7 @@ func HandlerUeOngoing(ue *context.GNBUe, message []byte, gnb *context.GNBContext
 
 func HandlerUeReady(ue *context.GNBUe, message []byte, gnb *context.GNBContext) {
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 	logFields[misc.NODE] = misc.GNB

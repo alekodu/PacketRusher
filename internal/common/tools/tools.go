@@ -39,7 +39,7 @@ func CreateGnbs(count int, cfg config.Config, wg *sync.WaitGroup) map[string]*gn
 	n2Port := cfg.GNodeB.ControlIF.Port
 	n3Port := cfg.GNodeB.DataIF.Port
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.GNB_ID] = cfg.GNodeB.PlmnList.GnbId
 	logFields[misc.NODE] = misc.TESTER
 	logFields[misc.FUNCTION] = misc.CONFIG
@@ -85,7 +85,7 @@ func gnbIdGenerator(i int, gnbId string) string {
 
 	gnbId_int, err := strconv.ParseInt(gnbId, 16, 0)
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.GNB_ID] = gnbId
 	logFields[misc.NODE] = misc.TESTER
 	logFields[misc.FUNCTION] = misc.CONFIG
@@ -127,7 +127,7 @@ func SimulateSingleUE(simConfig UESimulationConfig, wg *sync.WaitGroup) {
 	ueCfg := simConfig.Cfg
 	ueCfg.Ue.Msin = IncrementMsin(simConfig.UeId, simConfig.Cfg.Ue.Msin)
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.NODE] = misc.TESTER
 	logFields[misc.FUNCTION] = misc.SIMUL
 	logFields[misc.UE_MSIN] = ueCfg.Ue.Msin
@@ -235,7 +235,7 @@ func IncrementMsin(i int, msin string) string {
 
 	msin_int, err := strconv.Atoi(msin)
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.UE_MSIN] = msin
 	logFields[misc.NODE] = misc.TESTER
 	logFields[misc.FUNCTION] = misc.CONFIG

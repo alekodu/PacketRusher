@@ -29,7 +29,7 @@ func main() {
 		TimestampFormat: time.RFC3339Nano,
 	})
 
-	var logFields log.Fields
+	logFields := make(log.Fields)
 
 	logFields[misc.NODE] = misc.TESTER
 	logFields[misc.FUNCTION] = misc.CONFIG

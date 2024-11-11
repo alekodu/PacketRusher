@@ -121,7 +121,7 @@ func LoadDefaultConfig() Config {
 }
 
 func Load(configPath string) Config {
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.NODE] = misc.TESTER
 	logFields[misc.FUNCTION] = misc.CONFIG
 
@@ -134,7 +134,7 @@ func Load(configPath string) Config {
 }
 
 func readConfig(configPath string) Config {
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.NODE] = misc.TESTER
 	logFields[misc.FUNCTION] = misc.CONFIG
 
@@ -162,7 +162,7 @@ func readConfig(configPath string) Config {
 }
 
 func resolvHost(hostType string, hostOrIp string) string {
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.NODE] = misc.TESTER
 	logFields[misc.FUNCTION] = misc.CONFIG
 
@@ -184,7 +184,7 @@ func resolvHost(hostType string, hostOrIp string) string {
 }
 
 func getDefautlConfigPath() string {
-	var logFields log.Fields
+	logFields := make(log.Fields)
 	logFields[misc.NODE] = misc.TESTER
 	logFields[misc.FUNCTION] = misc.CONFIG
 
