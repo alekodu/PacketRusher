@@ -27,7 +27,7 @@ func SendPduSessionResourceSetupResponse(pduSessions []*context.GnbPDUSession, u
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnb.GetGnbId()
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
-	logFields[misc.UE_TMSI] = ue.GetTMSI().GetTMSI5G()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
 
@@ -58,7 +58,7 @@ func SendPduSessionReleaseResponse(pduSessionIds []ngapType.PDUSessionID, ue *co
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnbId
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
-	logFields[misc.UE_TMSI] = ue.GetTMSI().GetTMSI5G()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
 
@@ -88,7 +88,7 @@ func SendInitialContextSetupResponse(ue *context.GNBUe, gnb *context.GNBContext)
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnb.GetGnbId()
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
-	logFields[misc.UE_TMSI] = ue.GetTMSI().GetTMSI5G()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
 
@@ -116,7 +116,7 @@ func SendUeContextReleaseRequest(ue *context.GNBUe, gnbId string) {
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnbId
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
-	logFields[misc.UE_TMSI] = ue.GetTMSI().GetTMSI5G()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
 
@@ -144,7 +144,7 @@ func SendUeContextReleaseComplete(ue *context.GNBUe, gnbId string) {
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnbId
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
-	logFields[misc.UE_TMSI] = ue.GetTMSI().GetTMSI5G()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
 
@@ -221,7 +221,7 @@ func SendPathSwitchRequest(gnb *context.GNBContext, ue *context.GNBUe) {
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnb.GetGnbId()
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
-	logFields[misc.UE_TMSI] = ue.GetTMSI().GetTMSI5G()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
 
@@ -249,7 +249,7 @@ func SendHandoverRequestAcknowledge(gnb *context.GNBContext, ue *context.GNBUe) 
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnb.GetGnbId()
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
-	logFields[misc.UE_TMSI] = ue.GetTMSI().GetTMSI5G()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
 
@@ -277,7 +277,7 @@ func SendHandoverNotify(gnb *context.GNBContext, ue *context.GNBUe) {
 	logFields[misc.NODE] = misc.GNB
 	logFields[misc.GNB_ID] = gnb.GetGnbId()
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
-	logFields[misc.UE_TMSI] = ue.GetTMSI().GetTMSI5G()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
 
