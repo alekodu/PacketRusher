@@ -6,6 +6,7 @@ package utils
 
 import (
 	"my5G-RANTester/config"
+	"my5G-RANTester/misc"
 	"net"
 	"os"
 
@@ -19,6 +20,11 @@ import (
 )
 
 func CaptureTraffic(path cli.Path) {
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CAPTURE
+
 	f, err := os.Create(path)
 	if err != nil {
 		log.Fatal(err)

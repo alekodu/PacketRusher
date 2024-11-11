@@ -11,11 +11,11 @@ package trigger
 
 import (
 	context2 "my5G-RANTester/internal/control_test_engine/gnb/context"
-	"my5G-RANTester/internal/control_test_engine/procedures"
 	"my5G-RANTester/internal/control_test_engine/ue/context"
 	"my5G-RANTester/internal/control_test_engine/ue/nas/message/nas_control"
 	"my5G-RANTester/internal/control_test_engine/ue/nas/message/nas_control/mm_5gs"
 	"my5G-RANTester/internal/control_test_engine/ue/nas/message/sender"
+	"my5G-RANTester/misc"
 
 	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/nasMessage"
@@ -23,7 +23,16 @@ import (
 )
 
 func InitRegistration(ue *context.UEContext) {
-	log.Info("<", procedures.Registration, "><", ue.GetStateMM(), ">[UE][][]()()(", ue.GetMsin(), ") Initiating Registration")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Initiating Registration")
 
 	// registration procedure started.
 	registrationRequest := mm_5gs.GetRegistrationRequest(
@@ -37,7 +46,7 @@ func InitRegistration(ue *context.UEContext) {
 	if len(ue.UeSecurity.Kamf) != 0 {
 		registrationRequest, err = nas_control.EncodeNasPduWithSecurity(ue, registrationRequest, nas.SecurityHeaderTypeIntegrityProtected, true, false)
 		if err != nil {
-			log.Fatalf("<", procedures.Registration, "><", ue.GetStateMM(), ">[UE][NAS][]()()(", ue.GetMsin(), ") Unable to encode with integrity protection Registration Request: %s", err)
+			log.WithFields(logFields).Fatalf("Unable to encode with integrity protection Registration Request: %s", err)
 		}
 	}
 	// send to GNB.
@@ -48,11 +57,20 @@ func InitRegistration(ue *context.UEContext) {
 }
 
 func InitPduSessionRequest(ue *context.UEContext) {
-	log.Info("<", procedures.NewPDUSession, "><>[UE][][][]()()(", ue.GetMsin(), ") Initiating New PDU Session")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Initiating New PDU Session")
 
 	pduSession, err := ue.CreatePDUSession()
 	if err != nil {
-		log.Fatal("<", procedures.NewPDUSession, "><", pduSession.GetStateSM(), ">[UE][NAS][]()()(", ue.GetMsin(), ") ", err)
+		log.WithFields(logFields).Fatal(err)
 		return
 	}
 
@@ -61,9 +79,17 @@ func InitPduSessionRequest(ue *context.UEContext) {
 
 func InitPduSessionRequestInner(ue *context.UEContext, pduSession *context.UEPDUSession) {
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	ulNasTransport, err := mm_5gs.Request_UlNasTransport(pduSession, ue)
 	if err != nil {
-		log.Fatal("<", procedures.Registration, "><", pduSession.GetStateSM(), ">[UE][NAS][]()()(", ue.GetMsin(), ") Error sending ul nas transport and pdu session establishment request: ", err)
+		log.WithFields(logFields).Fatal("Error sending ul nas transport and pdu session establishment request: ", err)
 	}
 
 	// change the state of ue(SM).
@@ -74,16 +100,25 @@ func InitPduSessionRequestInner(ue *context.UEContext, pduSession *context.UEPDU
 }
 
 func InitPduSessionRelease(ue *context.UEContext, pduSession *context.UEPDUSession) {
-	log.Info("<", procedures.DestroyPDUSession, "><", pduSession.GetStateSM(), ">[UE][][]()()(", ue.GetMsin(), ") Initiating Release of PDU Session ", pduSession.Id)
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Initiating Release of PDU Session ", pduSession.Id)
 
 	if pduSession.GetStateSM() != context.SM5G_PDU_SESSION_ACTIVE {
-		log.Warn("<", procedures.DestroyPDUSession, "><", pduSession.GetStateSM(), ">[UE][NAS][]()()(", ue.GetMsin(), ") Skipping releasing the PDU Session ID ", pduSession.Id, " as it's not active")
+		log.Warn("Skipping releasing the PDU Session ID ", pduSession.Id, " as it's not active")
 		return
 	}
 
 	ulNasTransport, err := mm_5gs.Release_UlNasTransport(pduSession, ue)
 	if err != nil {
-		log.Fatal("<", procedures.DestroyPDUSession, "><", pduSession.GetStateSM(), ">[UE][NAS][]()()(", ue.GetMsin(), ") Error sending ul nas transport and pdu session establishment request: ", err)
+		log.WithFields(logFields).Fatal("Error sending ul nas transport and pdu session establishment request: ", err)
 	}
 
 	// change the state of ue(SM).
@@ -94,16 +129,25 @@ func InitPduSessionRelease(ue *context.UEContext, pduSession *context.UEPDUSessi
 }
 
 func InitPduSessionReleaseComplete(ue *context.UEContext, pduSession *context.UEPDUSession) {
-	log.Info("<", procedures.DestroyPDUSession, "><", pduSession.GetStateSM(), ">[UE][][]()()(", ue.GetMsin(), ") Initiating PDU Session Release Complete for PDU Session", pduSession.Id)
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Initiating PDU Session Release Complete for PDU Session", pduSession.Id)
 
 	if pduSession.GetStateSM() != context.SM5G_PDU_SESSION_INACTIVE {
-		log.Warn("<", procedures.DestroyPDUSession, "><", pduSession.GetStateSM(), ">[UE][NAS][]()()(", ue.GetMsin(), ") Unable to send PDU Session Release Complete for a PDU Session which is not inactive")
+		log.Warn("Unable to send PDU Session Release Complete for a PDU Session which is not inactive")
 		return
 	}
 
 	ulNasTransport, err := mm_5gs.ReleasComplete_UlNasTransport(pduSession, ue)
 	if err != nil {
-		log.Fatal("<", procedures.DestroyPDUSession, "><", pduSession.GetStateSM(), ">[UE][NAS][]()()(", ue.GetMsin(), ") Error sending ul nas transport and pdu session establishment request: ", err)
+		log.WithFields(logFields).Fatal("Error sending ul nas transport and pdu session establishment request: ", err)
 	}
 
 	// sending to GNB
@@ -111,12 +155,21 @@ func InitPduSessionReleaseComplete(ue *context.UEContext, pduSession *context.UE
 }
 
 func InitDeregistration(ue *context.UEContext) {
-	log.Info("<", procedures.Deregistration, "><", ue.GetStateMM(), ">[UE][][]()()(", ue.GetMsin(), ") Initiating Deregistration")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Initiating Deregistration")
 
 	// registration procedure started.
 	deregistrationRequest, err := mm_5gs.DeregistrationRequest(ue)
 	if err != nil {
-		log.Fatal("<", procedures.Deregistration, "><", ue.GetStateMM(), ">[UE][NAS][]()()(", ue.GetMsin(), ") Error sending deregistration request: ", err)
+		log.WithFields(logFields).Fatal("Error sending deregistration request: ", err)
 	}
 
 	// send to GNB.
@@ -127,7 +180,16 @@ func InitDeregistration(ue *context.UEContext) {
 }
 
 func InitIdentifyResponse(ue *context.UEContext) {
-	log.Info("<><>[UE][][]()()(", ue.GetMsin(), ") Initiating Identify Response")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Initiating Identify Response")
 
 	// trigger identity response.
 	identityResponse := mm_5gs.IdentityResponse(ue)
@@ -137,26 +199,44 @@ func InitIdentifyResponse(ue *context.UEContext) {
 }
 
 func InitConfigurationUpdateComplete(ue *context.UEContext) {
-	log.Info("<", procedures.NewPDUSession, "><>[UE][][]()()(", ue.GetMsin(), ") Initiating Configuration Update Complete")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Initiating Configuration Update Complete")
 
 	// trigger Configuration Update Complete.
 	identityResponse, err := mm_5gs.ConfigurationUpdateComplete(ue)
 	if err != nil {
-		log.Fatal("<", procedures.NewPDUSession, "><>[UE][NAS][]()()(", ue.GetMsin(), ") Error sending Configuration Update Complete: ", err)
+		log.WithFields(logFields).Fatal("Error sending Configuration Update Complete: ", err)
 	}
 	// send to GNB.
 	sender.SendToGnb(ue, identityResponse)
 }
 
 func InitServiceRequest(ue *context.UEContext) {
-	log.Info("<", procedures.ServiceRequest, "><", ue.GetStateMM(), ">[UE][][]()()(", ue.GetMsin(), ") Initiating Service Request")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Initiating Service Request")
 
 	// trigger ServiceRequest.
 	serviceRequest := mm_5gs.ServiceRequest(ue)
 	pdu, err := nas_control.EncodeNasPduWithSecurity(ue, serviceRequest, nas.SecurityHeaderTypeIntegrityProtected, true, false)
 
 	if err != nil {
-		log.Fatalf("Error encoding %s IMSI UE PduSession Establishment Request Msg", ue.UeSecurity.Supi)
+		log.WithFields(logFields).Fatalf("Error encoding %s IMSI UE PduSession Establishment Request Msg", ue.UeSecurity.Supi)
 	}
 
 	// send to GNB.
@@ -164,7 +244,16 @@ func InitServiceRequest(ue *context.UEContext) {
 }
 
 func SwitchToIdle(ue *context.UEContext) {
-	log.Info("<", procedures.Idle, "><", ue.GetStateMM(), ">[UE][][]()()(", ue.GetMsin(), ") Switching to 5GMM-IDLE")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Switching to 5GMM-IDLE")
 
 	// send to GNB.
 	sender.SendToGnbMsg(ue, context2.UEMessage{Idle: true})

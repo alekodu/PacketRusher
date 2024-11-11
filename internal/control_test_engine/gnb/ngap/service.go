@@ -7,6 +7,7 @@ package ngap
 import (
 	"fmt"
 	"my5G-RANTester/internal/control_test_engine/gnb/context"
+	"my5G-RANTester/misc"
 
 	"github.com/ishidawataru/sctp"
 	log "github.com/sirupsen/logrus"
@@ -60,11 +61,18 @@ func GnbListen(amf *context.GNBAmf, gnb *context.GNBContext) {
 	buf := make([]byte, 65535)
 	conn := amf.GetSCTPConn()
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.SCTP
+
 	/*
 		defer func() {
 			err := conn.Close()
 			if err != nil {
-				log.Info("[GNB][SCTP] Error in closing SCTP association for %d AMF\n", amf.GetAmfId())
+				log.WithFields(logFields).Info("Error in closing SCTP association for %d AMF\n", amf.GetAmfId())
 			}
 		}()
 	*/
@@ -76,7 +84,7 @@ func GnbListen(amf *context.GNBAmf, gnb *context.GNBContext) {
 			break
 		}
 
-		log.Info("[GNB][SCTP](", gnb.GetGnbId(), ")()() Receive message in ", info.Stream, " stream\n")
+		log.WithFields(logFields).Info("Receive message in ", info.Stream, " stream\n")
 
 		forwardData := make([]byte, n)
 		copy(forwardData, buf[:n])

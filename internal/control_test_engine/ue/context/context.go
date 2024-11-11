@@ -13,6 +13,7 @@ import (
 	"my5G-RANTester/config"
 	"my5G-RANTester/internal/control_test_engine/gnb/context"
 	"my5G-RANTester/internal/control_test_engine/ue/scenario"
+	"my5G-RANTester/misc"
 	"net"
 	"reflect"
 	"regexp"
@@ -448,12 +449,20 @@ func (ue *UEContext) GetMccAndMncInOctets() []byte {
 // no Routing Indicator is configured in the USIM, the UE shall coxde bits 1 to 4 of octet 8
 // of the Routing Indicator as "0000" and the remaining digits as “1111".
 func (ue *UEContext) GetRoutingIndicatorInOctets() []byte {
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.CONFIG
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	if len(ue.UeSecurity.RoutingIndicator) == 0 {
 		ue.UeSecurity.RoutingIndicator = "0"
 	}
 
 	if len(ue.UeSecurity.RoutingIndicator) > 4 {
-		log.Fatal("[UE][CONFIG] Routing indicator must be 4 digits maximum, ", ue.UeSecurity.RoutingIndicator, " is invalid")
+		log.WithFields(logFields).Fatal("Routing indicator must be 4 digits maximum, ", ue.UeSecurity.RoutingIndicator, " is invalid")
 	}
 
 	routingIndicator := []byte(ue.UeSecurity.RoutingIndicator)
@@ -471,7 +480,7 @@ func (ue *UEContext) GetRoutingIndicatorInOctets() []byte {
 	// BCD conversion
 	encodedRoutingIndicator, err := hex.DecodeString(string(routingIndicator))
 	if err != nil {
-		log.Fatal("[UE][CONFIG] Unable to encode routing indicator ", err)
+		log.WithFields(logFields).Fatal("Unable to encode routing indicator ", err)
 	}
 
 	return encodedRoutingIndicator
@@ -568,22 +577,29 @@ func (ue *UEContext) DeriveRESstarAndSetKey(authSubs models.AuthenticationSubscr
 	RES := make([]byte, 8)
 	AK, AKstar := make([]byte, 6), make([]byte, 6)
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.CONFIG
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	// Get OPC, K, SQN, AMF from USIM.
 	OPC, err := hex.DecodeString(authSubs.Opc.OpcValue)
 	if err != nil {
-		log.Fatal("[UE] OPC error: ", err, authSubs.Opc.OpcValue)
+		log.WithFields(logFields).Fatal("OPC error: ", err, authSubs.Opc.OpcValue)
 	}
 	K, err := hex.DecodeString(authSubs.PermanentKey.PermanentKeyValue)
 	if err != nil {
-		log.Fatal("[UE] K error: ", err, authSubs.PermanentKey.PermanentKeyValue)
+		log.WithFields(logFields).Fatal("K error: ", err, authSubs.PermanentKey.PermanentKeyValue)
 	}
 	sqnUe, err := hex.DecodeString(authSubs.SequenceNumber)
 	if err != nil {
-		log.Fatal("[UE] sqn error: ", err, authSubs.SequenceNumber)
+		log.WithFields(logFields).Fatal("sqn error: ", err, authSubs.SequenceNumber)
 	}
 	AMF, err := hex.DecodeString(authSubs.AuthenticationManagementField)
 	if err != nil {
-		log.Fatal("[UE] AuthenticationManagementField error: ", err, authSubs.AuthenticationManagementField)
+		log.WithFields(logFields).Fatal("AuthenticationManagementField error: ", err, authSubs.AuthenticationManagementField)
 	}
 
 	// Generate RES, CK, IK, AK, AKstar
@@ -635,7 +651,7 @@ func (ue *UEContext) DeriveRESstarAndSetKey(authSubs models.AuthenticationSubscr
 	ue.DerivateKamf(key, snNmae, sqnHn, AK)
 	kdfVal_for_resStar, err := ueauth.GetKDFValue(key, FC, P0, ueauth.KDFLen(P0), P1, ueauth.KDFLen(P1), P2, ueauth.KDFLen(P2))
 	if err != nil {
-		log.Fatal("[UE] Error while deriving KDF ", err)
+		log.WithFields(logFields).Fatal("Error while deriving KDF ", err)
 	}
 	return kdfVal_for_resStar[len(kdfVal_for_resStar)/2:], "successful"
 }
@@ -650,13 +666,21 @@ func (ue *UEContext) DerivateKamf(key []byte, snName string, SQN, AK []byte) {
 	}
 	P1 := SQNxorAK
 	Kausf, err := ueauth.GetKDFValue(key, FC, P0, ueauth.KDFLen(P0), P1, ueauth.KDFLen(P1))
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.CONFIG
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	if err != nil {
-		log.Fatal("[UE] Error while deriving Kausf ", err)
+		log.WithFields(logFields).Fatal("Error while deriving Kausf ", err)
 	}
 	P0 = []byte(snName)
 	Kseaf, err := ueauth.GetKDFValue(Kausf, ueauth.FC_FOR_KSEAF_DERIVATION, P0, ueauth.KDFLen(P0))
 	if err != nil {
-		log.Fatal("[UE] Error while deriving Kseaf ", err)
+		log.WithFields(logFields).Fatal("Error while deriving Kseaf ", err)
 	}
 	supiRegexp, _ := regexp.Compile("(?:imsi|supi)-([0-9]{5,15})")
 	groups := supiRegexp.FindStringSubmatch(ue.UeSecurity.Supi)
@@ -668,7 +692,7 @@ func (ue *UEContext) DerivateKamf(key []byte, snName string, SQN, AK []byte) {
 
 	ue.UeSecurity.Kamf, err = ueauth.GetKDFValue(Kseaf, ueauth.FC_FOR_KAMF_DERIVATION, P0, L0, P1, L1)
 	if err != nil {
-		log.Fatal("[UE] Error while deriving Kamf ", err)
+		log.WithFields(logFields).Fatal("Error while deriving Kamf ", err)
 	}
 }
 
@@ -680,8 +704,15 @@ func (ue *UEContext) DerivateAlgKey() {
 		ue.UeSecurity.IntegrityAlg,
 		&ue.UeSecurity.KnasInt)
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.CONFIG
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	if err != nil {
-		log.Errorf("[UE] Algorithm key derivation failed  %v", err)
+		log.WithFields(logFields).Errorf("Algorithm key derivation failed  %v", err)
 	}
 }
 
@@ -705,6 +736,13 @@ func (ue *UEContext) SetAuthSubscription(k, opc, op, amf, sqn string) {
 
 func (ue *UEContext) Terminate() {
 	ue.SetStateMM_NULL()
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.CONFIG
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
 
 	// clean all context of tun interface
 	for _, pduSession := range ue.PduSession {
@@ -745,7 +783,7 @@ func (ue *UEContext) Terminate() {
 	ue.Unlock()
 	close(ue.scenarioChan)
 
-	log.Info("[UE][][]()()(", ue.GetMsin(), ") UE Terminated")
+	log.WithFields(logFields).Info("UE Terminated")
 }
 
 func reverse(s string) string {

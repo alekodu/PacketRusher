@@ -7,6 +7,7 @@ package nas_control
 import (
 	"fmt"
 	"my5G-RANTester/internal/control_test_engine/ue/context"
+	"my5G-RANTester/misc"
 
 	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/nasMessage"
@@ -29,6 +30,15 @@ func EncodeNasPduWithSecurity(ue *context.UEContext, pdu []byte, securityHeaderT
 
 func NASEncode(ue *context.UEContext, msg *nas.Message, securityContextAvailable bool, newSecurityContext bool) (payload []byte, err error) {
 	var sequenceNumber uint8
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	if ue == nil {
 		err = fmt.Errorf("amfUe is nil")
 		return
@@ -57,7 +67,7 @@ func NASEncode(ue *context.UEContext, msg *nas.Message, securityContextAvailable
 			// make ciphering of NAS message.
 			if err = security.NASEncrypt(ue.UeSecurity.CipheringAlg, ue.UeSecurity.KnasEnc, ue.UeSecurity.ULCount.Get(), security.Bearer3GPP,
 				security.DirectionUplink, payload); err != nil {
-				log.Errorf("[UE][NAS] Error while encrypting NAS Message: %s", err)
+				log.WithFields(logFields).Errorf("Error while encrypting NAS Message: %s", err)
 				return
 			}
 		}
@@ -68,7 +78,7 @@ func NASEncode(ue *context.UEContext, msg *nas.Message, securityContextAvailable
 
 		mac32, err = security.NASMacCalculate(ue.UeSecurity.IntegrityAlg, ue.UeSecurity.KnasInt, ue.UeSecurity.ULCount.Get(), security.Bearer3GPP, security.DirectionUplink, payload)
 		if err != nil {
-			log.Errorf("[UE][NAS] Error while calculating MAC of NAS Message: %s", err)
+			log.WithFields(logFields).Errorf("Error while calculating MAC of NAS Message: %s", err)
 			return
 		}
 

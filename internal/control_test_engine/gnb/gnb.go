@@ -11,6 +11,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap"
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/trigger"
 	"my5G-RANTester/internal/monitoring"
+	"my5G-RANTester/misc"
 
 	"os"
 	"os/signal"
@@ -38,6 +39,13 @@ func InitGnb(conf config.Config, wg *sync.WaitGroup) *context.GNBContext {
 		conf.GNodeB.ControlIF.Port,
 		conf.GNodeB.DataIF.Port)
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	// start communication with AMF (server SCTP).
 	for _, amfConfig := range conf.AMFs {
 		// new AMF context.
@@ -45,9 +53,9 @@ func InitGnb(conf config.Config, wg *sync.WaitGroup) *context.GNBContext {
 
 		// start communication with AMF(SCTP).
 		if err := ngap.InitConn(amf, gnb); err != nil {
-			log.Fatal("Error in", err)
+			log.WithFields(logFields).Fatal("Error in", err)
 		} else {
-			log.Info("[GNB][SCTP/NGAP](", gnb.GetGnbId(), ")()() SCTP/NGAP service is running on ", gnb.GetGnbIp(), ":", gnb.GetGnbPort())
+			log.WithFields(logFields).Info("SCTP/NGAP service is running on ", gnb.GetGnbIp(), ":", gnb.GetGnbPort())
 			// wg.Add(1)
 		}
 
@@ -134,6 +142,13 @@ func InitGnbForAvaibility(conf config.Config,
 		conf.GNodeB.ControlIF.Port,
 		conf.GNodeB.DataIF.Port)
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	// start communication with AMF (server SCTP).
 	for _, amf := range conf.AMFs {
 		// new AMF context.
@@ -141,12 +156,12 @@ func InitGnbForAvaibility(conf config.Config,
 
 		// start communication with AMF(SCTP).
 		if err := ngap.InitConn(amf, gnb); err != nil {
-			log.Info("Error in ", err)
+			log.WithFields(logFields).Info("Error in ", err)
 
 			return
 
 		} else {
-			log.Info("[GNB][SCTP/NGAP](", gnb.GetGnbId(), ")()() SCTP/NGAP service is running on ", gnb.GetGnbIp(), ":", gnb.GetGnbPort())
+			log.WithFields(logFields).Info("SCTP/NGAP service is running on ", gnb.GetGnbIp(), ":", gnb.GetGnbPort())
 
 		}
 

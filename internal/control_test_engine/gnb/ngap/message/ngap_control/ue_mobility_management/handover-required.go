@@ -6,6 +6,7 @@ package ue_mobility_management
 
 import (
 	"my5G-RANTester/internal/control_test_engine/gnb/context"
+	"my5G-RANTester/misc"
 
 	"github.com/free5gc/ngap"
 	log "github.com/sirupsen/logrus"
@@ -162,6 +163,8 @@ func (builder *HandoverRequiredBuilder) SetPduSessionResourceList(pduSessions [1
 	ie.Value.Present = ngapType.HandoverRequiredIEsPresentPDUSessionResourceListHORqd
 	ie.Value.PDUSessionResourceListHORqd = new(ngapType.PDUSessionResourceListHORqd)
 
+	logFields := make(log.Fields)
+
 	pDUSessionResourceListHORqd := ie.Value.PDUSessionResourceListHORqd
 
 	for _, pduSession := range pduSessions {
@@ -180,8 +183,12 @@ func (builder *HandoverRequiredBuilder) SetPduSessionResourceList(pduSessions [1
 		pDUSessionResourceListHORqd.List = append(pDUSessionResourceListHORqd.List, pDUSessionResourceItem)
 	}
 
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.FUNCTION] = misc.SETUP
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	if len(pDUSessionResourceListHORqd.List) == 0 {
-		log.Error("[GNB][NGAP][]()()() No PDU Session to set up in InitialContextSetupResponse. NGAP Handover requires at least a PDU Session.")
+		log.WithFields(logFields).Error("No PDU Session to set up in InitialContextSetupResponse. NGAP Handover requires at least a PDU Session.")
 		return builder
 	}
 
@@ -208,8 +215,15 @@ func (builder *HandoverRequiredBuilder) SetSourceToTargetContainer(sourceGnb *co
 func GetSourceToTargetTransparentTransfer(sourceGnb *context.GNBContext, targetGnb *context.GNBContext, pduSessions [16]*context.GnbPDUSession, prUeId int64) []byte {
 	data := buildSourceToTargetTransparentTransfer(sourceGnb, targetGnb, pduSessions, prUeId)
 	encodeData, err := aper.MarshalWithParams(data, "valueExt")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.FUNCTION] = misc.SETUP
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	if err != nil {
-		log.Fatalf("aper MarshalWithParams error in GetSourceToTargetTransparentTransfer: %+v", err)
+		log.WithFields(logFields).Fatalf("aper MarshalWithParams error in GetSourceToTargetTransparentTransfer: %+v", err)
 	}
 	return encodeData
 }
@@ -234,8 +248,17 @@ func buildSourceToTargetTransparentTransfer(sourceGnb *context.GNBContext, targe
 		infoItem.QosFlowInformationList.List = append(infoItem.QosFlowInformationList.List, qosItem)
 		data.PDUSessionResourceInformationList.List = append(data.PDUSessionResourceInformationList.List, infoItem)
 	}
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.GNB_ID] = sourceGnb.GetGnbId()
+	logFields[misc.UE_PR_ID] = prUeId
+	logFields[misc.FUNCTION] = misc.SETUP
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	if len(data.PDUSessionResourceInformationList.List) == 0 {
-		log.Error("[GNB][NGAP] No PDU Session to set up in InitialContextSetupResponse. NGAP Handover requires at least a PDU Session.")
+		log.Error("No PDU Session to set up in InitialContextSetupResponse. NGAP Handover requires at least a PDU Session.")
 		data.PDUSessionResourceInformationList = nil
 	}
 

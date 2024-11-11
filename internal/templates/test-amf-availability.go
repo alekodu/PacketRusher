@@ -8,6 +8,7 @@ import (
 	"my5G-RANTester/config"
 	"my5G-RANTester/internal/control_test_engine/gnb"
 	"my5G-RANTester/internal/monitoring"
+	"my5G-RANTester/misc"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -18,6 +19,11 @@ func TestAvailability(interval int) {
 	monitor := monitoring.Monitor{}
 
 	conf := config.GetConfig()
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
 
 	ranPort := 1000
 	for y := 1; y <= interval; y++ {
@@ -38,10 +44,10 @@ func TestAvailability(interval int) {
 		time.Sleep(1020 * time.Millisecond)
 
 		if monitor.GetAvailability() {
-			log.Warn("[TESTER][GNB] AMF Availability:", 1)
+			log.WithFields(logFields).Warn("AMF Availability:", 1)
 
 		} else {
-			log.Warn("[TESTER][GNB] AMF Availability:", 0)
+			log.WithFields(logFields).Warn("AMF Availability:", 0)
 
 		}
 	}

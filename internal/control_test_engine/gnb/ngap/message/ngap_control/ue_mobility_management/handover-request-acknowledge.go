@@ -7,6 +7,7 @@ package ue_mobility_management
 import (
 	"encoding/binary"
 	"my5G-RANTester/internal/control_test_engine/gnb/context"
+	"my5G-RANTester/misc"
 
 	"github.com/free5gc/aper"
 	"github.com/free5gc/ngap"
@@ -24,7 +25,7 @@ type HandoverRequestAcknowledgeBuilder struct {
 func HandoverRequestAcknowledge(gnb *context.GNBContext, ue *context.GNBUe) ([]byte, error) {
 	return NewHandoverRequestAcknowledgeBuilder().
 		SetAmfUeNgapId(ue.GetAmfUeId()).SetRanUeNgapId(ue.GetRanUeId()).
-		SetPduSessionResourceAdmittedList(gnb, ue.GetPduSessions()).
+		SetPduSessionResourceAdmittedList(gnb, ue).
 		SetTargetToSourceContainer().
 		Build()
 }
@@ -80,12 +81,17 @@ func (builder *HandoverRequestAcknowledgeBuilder) SetRanUeNgapId(ranUeNgapID int
 	return builder
 }
 
-func (builder *HandoverRequestAcknowledgeBuilder) SetPduSessionResourceAdmittedList(gnb *context.GNBContext, pduSessions [16]*context.GnbPDUSession) *HandoverRequestAcknowledgeBuilder {
+func (builder *HandoverRequestAcknowledgeBuilder) SetPduSessionResourceAdmittedList(gnb *context.GNBContext, ue *context.GNBUe) *HandoverRequestAcknowledgeBuilder {
+	//[16]*context.GnbPDUSession
+	var pduSessions = ue.GetPduSessions()
+
 	ie := ngapType.HandoverRequestAcknowledgeIEs{}
 	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceAdmittedList
 	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
 	ie.Value.Present = ngapType.HandoverRequestAcknowledgeIEsPresentPDUSessionResourceAdmittedList
 	ie.Value.PDUSessionResourceAdmittedList = new(ngapType.PDUSessionResourceAdmittedList)
+
+	logFields := make(log.Fields)
 
 	pDUSessionResourceAdmittedList := ie.Value.PDUSessionResourceAdmittedList
 
@@ -101,8 +107,17 @@ func (builder *HandoverRequestAcknowledgeBuilder) SetPduSessionResourceAdmittedL
 		pDUSessionResourceAdmittedList.List = append(pDUSessionResourceAdmittedList.List, pDUSessionResourceAdmittedItem)
 	}
 
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.GNB_ID] = gnb.GetGnbId()
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_TMSI] = ue.GetTMSI()
+	logFields[misc.FUNCTION] = misc.SETUP
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	if len(pDUSessionResourceAdmittedList.List) == 0 {
-		log.Info("[GNB][NGAP] No admitted PDU Session")
+		log.WithFields(logFields).Info("No admitted PDU Session")
 		return builder
 	}
 
@@ -133,8 +148,15 @@ func (builder *HandoverRequestAcknowledgeBuilder) Build() ([]byte, error) {
 func GetHandoverRequestAcknowledgeTransfer(gnb *context.GNBContext, pduSession *context.GnbPDUSession) []byte {
 	data := buildHandoverRequestAcknowledgeTransfer(gnb, pduSession)
 	encodeData, err := aper.MarshalWithParams(data, "valueExt")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.FUNCTION] = misc.SETUP
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	if err != nil {
-		log.Fatalf("aper MarshalWithParams error in GetHandoverRequestAcknowledgeTransfer: %+v", err)
+		log.WithFields(logFields).Fatalf("aper MarshalWithParams error in GetHandoverRequestAcknowledgeTransfer: %+v", err)
 	}
 	return encodeData
 }
@@ -165,8 +187,15 @@ func buildHandoverRequestAcknowledgeTransfer(gnb *context.GNBContext, pduSession
 func GetTargetToSourceTransparentTransfer() []byte {
 	data := buildTargetToSourceTransparentTransfer()
 	encodeData, err := aper.MarshalWithParams(data, "valueExt")
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.FUNCTION] = misc.SETUP
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	if err != nil {
-		log.Fatalf("aper MarshalWithParams error in GetTargetToSourceTransparentTransfer: %+v", err)
+		log.WithFields(logFields).Fatalf("aper MarshalWithParams error in GetTargetToSourceTransparentTransfer: %+v", err)
 	}
 	return encodeData
 }

@@ -8,6 +8,7 @@ import (
 	"my5G-RANTester/config"
 	"my5G-RANTester/internal/common/tools"
 	"my5G-RANTester/internal/control_test_engine/procedures"
+	"my5G-RANTester/misc"
 	"os"
 	"os/signal"
 	"sync"
@@ -17,17 +18,23 @@ import (
 )
 
 func TestMultiUesInQueue(numUes int, tunnelMode config.TunnelMode, dedicatedGnb bool, loop bool, timeBetweenRegistration int, timeBeforeDeregistration int, timeBeforeNgapHandover int, timeBeforeXnHandover int, timeBeforeIdle int, timeBeforeReconnecting int, numPduSessions int) {
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CONFIG
+
 	if tunnelMode != config.TunnelDisabled {
 		if !dedicatedGnb {
-			log.Fatal("You cannot use the --tunnel option, without using the --dedicatedGnb option")
+			log.WithFields(logFields).Fatal("You cannot use the --tunnel option, without using the --dedicatedGnb option")
 		}
 		if timeBetweenRegistration < 500 {
-			log.Fatal("When using the --tunnel option, --timeBetweenRegistration must be equal to at least 500 ms, or else gtp5g kernel module may crash if you create tunnels too rapidly.")
+			log.WithFields(logFields).Fatal("When using the --tunnel option, --timeBetweenRegistration must be equal to at least 500 ms, or else gtp5g kernel module may crash if you create tunnels too rapidly.")
 		}
 	}
 
 	if numPduSessions > 16 {
-		log.Fatal("You can't have more than 16 PDU Sessions per UE as per spec.")
+		log.WithFields(logFields).Fatal("You can't have more than 16 PDU Sessions per UE as per spec.")
 	}
 
 	wg := sync.WaitGroup{}
@@ -41,7 +48,7 @@ func TestMultiUesInQueue(numUes int, tunnelMode config.TunnelMode, dedicatedGnb 
 		numGnb = 1
 	}
 	if numGnb <= 1 && (timeBeforeXnHandover != 0 || timeBeforeNgapHandover != 0) {
-		log.Warn("[TESTER] We are increasing the number of gNodeB to two for handover test cases. Make you sure you fill the requirements for having two gNodeBs.")
+		log.WithFields(logFields).Warn("We are increasing the number of gNodeB to two for handover test cases. Make you sure you fill the requirements for having two gNodeBs.")
 		numGnb++
 	}
 	gnbs := tools.CreateGnbs(numGnb, cfg, &wg)

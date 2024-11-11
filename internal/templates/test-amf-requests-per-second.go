@@ -11,6 +11,7 @@ import (
 	"my5G-RANTester/config"
 	"my5G-RANTester/internal/control_test_engine/gnb"
 	"my5G-RANTester/internal/monitoring"
+	"my5G-RANTester/misc"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -28,6 +29,11 @@ func TestRqsLoop(numRqs int, interval int) int64 {
 	}
 
 	cfg := config.GetConfig()
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.TESTER
+	logFields[misc.FUNCTION] = misc.CAPTURE
 
 	ranPort := 1000
 	for y := 1; y <= interval; y++ {
@@ -49,7 +55,7 @@ func TestRqsLoop(numRqs int, interval int) int64 {
 
 		wg.Wait()
 
-		log.Warn("[TESTER][GNB] AMF Responses per Second:", monitor.GetRqsLocal())
+		log.WithFields(logFields).Warn("AMF Responses per Second:", monitor.GetRqsLocal())
 		monitor.SetRqsGlobal(monitor.GetRqsLocal())
 	}
 

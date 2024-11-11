@@ -14,6 +14,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/ue/nas/trigger"
 	"my5G-RANTester/internal/control_test_engine/ue/scenario"
 	"my5G-RANTester/internal/control_test_engine/ue/state"
+	"my5G-RANTester/misc"
 	"os"
 	"os/signal"
 	"sync"
@@ -53,20 +54,28 @@ func NewUE(conf config.Config, id int, ueMgrChannel chan procedures.UeTesterMess
 		sigStop := make(chan os.Signal, 1)
 		signal.Notify(sigStop, os.Interrupt)
 
+		logFields := make(log.Fields)
+
+		logFields[misc.NODE] = misc.UE
+		logFields[misc.FUNCTION] = misc.SETUP
+		logFields[misc.PROTOCOL] = misc.NAS
+		logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+		logFields[misc.UE_MSIN] = ue.GetMsin()
+
 		// Block until a signal is received.
 		loop := true
 		for loop {
 			select {
 			case msg, open := <-ue.GetGnbTx():
 				if !open {
-					log.Warn("[UE][]()()(", ue.GetPrUeId(), ") Stopping UE as communication with gNB was closed")
+					log.WithFields(logFields).Warn("Stopping UE as communication with gNB was closed")
 					ue.SetGnbTx(nil)
 					break
 				}
 				gnbMsgHandler(msg, ue)
 			case msg, open := <-ueMgrChannel:
 				if !open {
-					log.Warn("[UE][]()()(", ue.GetPrUeId(), ") Stopping UE as communication with scenario was closed")
+					log.WithFields(logFields).Warn("Stopping UE as communication with scenario was closed")
 					loop = false
 					break
 				}
@@ -83,13 +92,22 @@ func NewUE(conf config.Config, id int, ueMgrChannel chan procedures.UeTesterMess
 }
 
 func gnbMsgHandler(msg context2.UEMessage, ue *context.UEContext) {
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	if msg.IsNas {
 		state.DispatchState(ue, msg.Nas)
 	} else if msg.GNBPduSessions[0] != nil {
 		// Setup PDU Session
 		serviceGtp.SetupGtpInterface(ue, msg)
 	} else if msg.GNBRx != nil && msg.GNBTx != nil && msg.GNBInboundChannel != nil {
-		log.Info("[UE][]()()(", ue.GetPrUeId(), ") gNodeB is telling us to use another gNodeB")
+		log.WithFields(logFields).Info("gNodeB is telling us to use another gNodeB")
 		previousGnbRx := ue.GetGnbRx()
 		ue.SetGnbInboundChannel(msg.GNBInboundChannel)
 		ue.SetGnbRx(msg.GNBRx)
@@ -97,7 +115,7 @@ func gnbMsgHandler(msg context2.UEMessage, ue *context.UEContext) {
 		previousGnbRx <- context2.UEMessage{ConnectionClosed: true}
 		close(previousGnbRx)
 	} else {
-		log.Error("[UE][]()()(", ue.GetPrUeId(), ") Received unknown message from gNodeB", msg)
+		log.WithFields(logFields).Error("Received unknown message from gNodeB", msg)
 	}
 }
 
@@ -115,6 +133,15 @@ func verifyPaging(ue *context.UEContext) {
 }
 
 func ueMgrHandler(msg procedures.UeTesterMessage, ue *context.UEContext) bool {
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	loop := true
 	switch msg.Type {
 	case procedures.Registration:
@@ -126,7 +153,7 @@ func ueMgrHandler(msg procedures.UeTesterMessage, ue *context.UEContext) bool {
 	case procedures.DestroyPDUSession:
 		pdu, err := ue.GetPduSession(msg.Param)
 		if err != nil {
-			log.Error("[UE][]()()(", ue.GetPrUeId(), ") Cannot release unknown PDU Session ID ", msg.Param)
+			log.WithFields(logFields).Error("Cannot release unknown PDU Session ID ", msg.Param)
 			return loop
 		}
 		trigger.InitPduSessionRelease(ue, pdu)
@@ -150,7 +177,7 @@ func ueMgrHandler(msg procedures.UeTesterMessage, ue *context.UEContext) bool {
 			}
 		}
 	case procedures.Terminate:
-		log.Info("[UE][]()()(", ue.GetPrUeId(), ") Terminating UE as requested")
+		log.WithFields(logFields).Info("Terminating UE as requested")
 		// If UE is registered
 		if ue.GetStateMM() == context.MM5G_REGISTERED {
 			// Release PDU Sessions

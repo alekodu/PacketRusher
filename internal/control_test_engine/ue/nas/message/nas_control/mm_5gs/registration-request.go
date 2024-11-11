@@ -9,6 +9,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"my5G-RANTester/internal/control_test_engine/ue/context"
+	"my5G-RANTester/misc"
 
 	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/nasMessage"
@@ -87,10 +88,18 @@ func GetRegistrationRequest(registrationType uint8, requestedNSSAI *nasType.Requ
 
 	nasPdu = data.Bytes()
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	if pduFlag != 0 {
 		if err = security.NASEncrypt(ue.UeSecurity.CipheringAlg, ue.UeSecurity.KnasEnc, ue.UeSecurity.ULCount.Get(), security.Bearer3GPP,
 			security.DirectionUplink, nasPdu); err != nil {
-			log.Errorf("[UE][NAS] Error while encrypting NAS Message: %s", err)
+			log.WithFields(logFields).Errorf("Error while encrypting NAS Message: %s", err)
 			return
 		}
 

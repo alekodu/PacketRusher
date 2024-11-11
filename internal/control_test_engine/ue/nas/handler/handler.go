@@ -12,6 +12,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/ue/nas/message/nas_control/mm_5gs"
 	"my5G-RANTester/internal/control_test_engine/ue/nas/message/sender"
 	"my5G-RANTester/internal/control_test_engine/ue/nas/trigger"
+	"my5G-RANTester/misc"
 	"reflect"
 	"time"
 
@@ -23,53 +24,70 @@ import (
 
 func HandlerAuthenticationReject(ue *context.UEContext, message *nas.Message) {
 
-	log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Authentication of UE ", ue.GetUeId(), " failed")
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
+	log.WithFields(logFields).Info("Authentication of UE ", ue.GetUeId(), " failed")
 
 	ue.SetStateMM_DEREGISTERED()
 }
 
 func HandlerAuthenticationRequest(ue *context.UEContext, message *nas.Message) {
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	var authenticationResponse []byte
 
 	// check the mandatory fields
 	if reflect.ValueOf(message.AuthenticationRequest.ExtendedProtocolDiscriminator).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, Extended Protocol is missing")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, Extended Protocol is missing")
 	}
 
 	if message.AuthenticationRequest.ExtendedProtocolDiscriminator.GetExtendedProtocolDiscriminator() != 126 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, Extended Protocol not the expected value")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, Extended Protocol not the expected value")
 	}
 
 	if message.AuthenticationRequest.SpareHalfOctetAndSecurityHeaderType.GetSpareHalfOctet() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, Spare Half Octet not the expected value")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, Spare Half Octet not the expected value")
 	}
 
 	if message.AuthenticationRequest.SpareHalfOctetAndSecurityHeaderType.GetSecurityHeaderType() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, Security Header Type not the expected value")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, Security Header Type not the expected value")
 	}
 
 	if reflect.ValueOf(message.AuthenticationRequest.AuthenticationRequestMessageIdentity).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, Message Type is missing")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, Message Type is missing")
 	}
 
 	if message.AuthenticationRequest.AuthenticationRequestMessageIdentity.GetMessageType() != 86 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, Message Type not the expected value")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, Message Type not the expected value")
 	}
 
 	if message.AuthenticationRequest.SpareHalfOctetAndNgksi.GetSpareHalfOctet() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, Spare Half Octet not the expected value")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, Spare Half Octet not the expected value")
 	}
 
 	if message.AuthenticationRequest.SpareHalfOctetAndNgksi.GetNasKeySetIdentifiler() == 7 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, ngKSI not the expected value")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, ngKSI not the expected value")
 	}
 
 	if reflect.ValueOf(message.AuthenticationRequest.ABBA).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, ABBA is missing")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, ABBA is missing")
 	}
 
 	if message.AuthenticationRequest.GetABBAContents() == nil {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Authentication Request, ABBA Content is missing")
+		log.WithFields(logFields).Fatal("Error in Authentication Request, ABBA Content is missing")
 	}
 
 	// getting RAND and AUTN from the message.
@@ -82,23 +100,23 @@ func HandlerAuthenticationRequest(ue *context.UEContext, message *nas.Message) {
 	switch check {
 
 	case "MAC failure":
-		log.Info("[UE][NAS][MAC]()()(", ue.GetMsin(), ") Authenticity of the authentication request message: FAILED")
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Send authentication failure with MAC failure")
+		log.WithFields(logFields).Info("Authenticity of the authentication request message: FAILED")
+		log.WithFields(logFields).Info("Send authentication failure with MAC failure")
 		authenticationResponse = mm_5gs.AuthenticationFailure("MAC failure", "", paramAutn)
 		// not change the state of UE.
 
 	case "SQN failure":
-		log.Info("[UE][NAS][MAC]()()(", ue.GetMsin(), ") Authenticity of the authentication request message: OK")
-		log.Info("[UE][NAS][SQN]()()(", ue.GetMsin(), ") SQN of the authentication request message: INVALID")
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Send authentication failure with Synch failure")
+		log.WithFields(logFields).Info("Authenticity of the authentication request message: OK")
+		log.WithFields(logFields).Info("SQN of the authentication request message: INVALID")
+		log.WithFields(logFields).Info("Send authentication failure with Synch failure")
 		authenticationResponse = mm_5gs.AuthenticationFailure("SQN failure", "", paramAutn)
 		// not change the state of UE.
 
 	case "successful":
 		// getting NAS Authentication Response.
-		log.Info("[UE][NAS][MAC]()()(", ue.GetMsin(), ") Authenticity of the authentication request message: OK")
-		log.Info("[UE][NAS][SQN]()()(", ue.GetMsin(), ") SQN of the authentication request message: VALID")
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Send authentication response")
+		log.WithFields(logFields).Info("Authenticity of the authentication request message: OK")
+		log.WithFields(logFields).Info("SQN of the authentication request message: VALID")
+		log.WithFields(logFields).Info("Send authentication response")
 		authenticationResponse = mm_5gs.AuthenticationResponse(paramAutn, "")
 
 		// change state of UE for registered-initiated
@@ -110,62 +128,71 @@ func HandlerAuthenticationRequest(ue *context.UEContext, message *nas.Message) {
 }
 
 func HandlerSecurityModeCommand(ue *context.UEContext, message *nas.Message) { // check the mandatory fields
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	if reflect.ValueOf(message.SecurityModeCommand.ExtendedProtocolDiscriminator).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, Extended Protocol is missing")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, Extended Protocol is missing")
 	}
 
 	if message.SecurityModeCommand.ExtendedProtocolDiscriminator.GetExtendedProtocolDiscriminator() != 126 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, Extended Protocol not the expected value")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, Extended Protocol not the expected value")
 	}
 
 	if message.SecurityModeCommand.SpareHalfOctetAndSecurityHeaderType.GetSecurityHeaderType() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, Security Header Type not the expected value")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, Security Header Type not the expected value")
 	}
 
 	if message.SecurityModeCommand.SpareHalfOctetAndSecurityHeaderType.GetSpareHalfOctet() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, Spare Half Octet not the expected value")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, Spare Half Octet not the expected value")
 	}
 
 	if reflect.ValueOf(message.SecurityModeCommand.SecurityModeCommandMessageIdentity).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, Message Type is missing")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, Message Type is missing")
 	}
 
 	if message.SecurityModeCommand.SecurityModeCommandMessageIdentity.GetMessageType() != 93 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, Message Type not the expected value")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, Message Type not the expected value")
 	}
 
 	if reflect.ValueOf(message.SecurityModeCommand.SelectedNASSecurityAlgorithms).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, NAS Security Algorithms is missing")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, NAS Security Algorithms is missing")
 	}
 
 	if message.SecurityModeCommand.SpareHalfOctetAndNgksi.GetSpareHalfOctet() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, Spare Half Octet is missing")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, Spare Half Octet is missing")
 	}
 
 	if message.SecurityModeCommand.SpareHalfOctetAndNgksi.GetNasKeySetIdentifiler() == 7 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, ngKSI not the expected value")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, ngKSI not the expected value")
 	}
 
 	if reflect.ValueOf(message.SecurityModeCommand.ReplayedUESecurityCapabilities).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Security Mode Command, Replayed UE Security Capabilities is missing")
+		log.WithFields(logFields).Fatal("Error in Security Mode Command, Replayed UE Security Capabilities is missing")
 	}
 
 	switch ue.UeSecurity.CipheringAlg {
 	case 0:
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Type of ciphering algorithm is 5G-EA0")
+		log.WithFields(logFields).Info("Type of ciphering algorithm is 5G-EA0")
 	case 1:
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Type of ciphering algorithm is 128-5G-EA1")
+		log.WithFields(logFields).Info("Type of ciphering algorithm is 128-5G-EA1")
 	case 2:
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Type of ciphering algorithm is 128-5G-EA2")
+		log.WithFields(logFields).Info("Type of ciphering algorithm is 128-5G-EA2")
 	}
 
 	switch ue.UeSecurity.IntegrityAlg {
 	case 0:
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Type of integrity protection algorithm is 5G-IA0")
+		log.WithFields(logFields).Info("Type of integrity protection algorithm is 5G-IA0")
 	case 1:
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Type of integrity protection algorithm is 128-5G-IA1")
+		log.WithFields(logFields).Info("Type of integrity protection algorithm is 128-5G-IA1")
 	case 2:
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Type of integrity protection algorithm is 128-5G-IA2")
+		log.WithFields(logFields).Info("Type of integrity protection algorithm is 128-5G-IA2")
 	}
 
 	rinmr := uint8(0)
@@ -187,7 +214,7 @@ func HandlerSecurityModeCommand(ue *context.UEContext, message *nas.Message) { /
 	// getting NAS Security Mode Complete.
 	securityModeComplete, err := mm_5gs.SecurityModeComplete(ue, rinmr)
 	if err != nil {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error sending Security Mode Complete: ", err)
+		log.WithFields(logFields).Fatal("Error sending Security Mode Complete: ", err)
 	}
 
 	// sending to GNB
@@ -196,36 +223,45 @@ func HandlerSecurityModeCommand(ue *context.UEContext, message *nas.Message) { /
 
 func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 	// check the mandatory fields
+
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	if reflect.ValueOf(message.RegistrationAccept.ExtendedProtocolDiscriminator).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Registration Accept, Extended Protocol is missing")
+		log.WithFields(logFields).Fatal("Error in Registration Accept, Extended Protocol is missing")
 	}
 
 	if message.RegistrationAccept.ExtendedProtocolDiscriminator.GetExtendedProtocolDiscriminator() != 126 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Registration Accept, Extended Protocol not the expected value")
+		log.WithFields(logFields).Fatal("Error in Registration Accept, Extended Protocol not the expected value")
 	}
 
 	if message.RegistrationAccept.SpareHalfOctetAndSecurityHeaderType.GetSpareHalfOctet() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Registration Accept, Spare Half not the expected value")
+		log.WithFields(logFields).Fatal("Error in Registration Accept, Spare Half not the expected value")
 	}
 
 	if message.RegistrationAccept.SpareHalfOctetAndSecurityHeaderType.GetSecurityHeaderType() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Registration Accept, Security Header not the expected value")
+		log.WithFields(logFields).Fatal("Error in Registration Accept, Security Header not the expected value")
 	}
 
 	if reflect.ValueOf(message.RegistrationAccept.RegistrationAcceptMessageIdentity).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Registration Accept, Message Type is missing")
+		log.WithFields(logFields).Fatal("Error in Registration Accept, Message Type is missing")
 	}
 
 	if message.RegistrationAccept.RegistrationAcceptMessageIdentity.GetMessageType() != 66 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Registration Accept, Message Type not the expected value")
+		log.WithFields(logFields).Fatal("Error in Registration Accept, Message Type not the expected value")
 	}
 
 	if reflect.ValueOf(message.RegistrationAccept.RegistrationResult5GS).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Registration Accept, Registration Result 5GS is missing")
+		log.WithFields(logFields).Fatal("Error in Registration Accept, Registration Result 5GS is missing")
 	}
 
 	if message.RegistrationAccept.RegistrationResult5GS.GetRegistrationResultValue5GS() != 1 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Registration Accept, Registration Result 5GS not the expected value")
+		log.WithFields(logFields).Fatal("Error in Registration Accept, Registration Result 5GS not the expected value")
 	}
 
 	// change the state of ue for registered
@@ -235,7 +271,7 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 	if message.RegistrationAccept.GUTI5G != nil {
 		ue.Set5gGuti(message.RegistrationAccept.GUTI5G)
 	} else {
-		log.Warn("[UE][NAS][]()()(", ue.GetMsin(), ") UE was not assigned a 5G-GUTI by AMF")
+		log.Warn("UE was not assigned a 5G-GUTI by AMF")
 	}
 
 	// use the slice allowed by the network
@@ -249,15 +285,15 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 		ue.Snssai.Sst = int32(snssai[1])
 		ue.Snssai.Sd = fmt.Sprintf("0%x0%x0%x", snssai[2], snssai[3], snssai[4])
 
-		log.Warn("[UE][NAS][]()()(", ue.GetMsin(), ") ALLOWED NSSAI: SST: ", ue.Snssai.Sst, " SD: ", ue.Snssai.Sd)
+		log.Warn("ALLOWED NSSAI: SST: ", ue.Snssai.Sst, " SD: ", ue.Snssai.Sd)
 	}
 
-	log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") UE 5G GUTI: ", ue.Get5gGuti())
+	log.WithFields(logFields).Info("UE 5G GUTI: ", ue.Get5gGuti())
 
 	// getting NAS registration complete.
 	registrationComplete, err := mm_5gs.RegistrationComplete(ue)
 	if err != nil {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error sending Registration Complete: ", err)
+		log.WithFields(logFields).Fatal("Error sending Registration Complete: ", err)
 	}
 
 	// sending to GNB
@@ -271,45 +307,53 @@ func HandlerServiceAccept(ue *context.UEContext, message *nas.Message) {
 
 func HandlerDlNasTransportPduaccept(ue *context.UEContext, message *nas.Message) {
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	// check the mandatory fields
 	if reflect.ValueOf(message.DLNASTransport.ExtendedProtocolDiscriminator).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, Extended Protocol is missing")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, Extended Protocol is missing")
 	}
 
 	if message.DLNASTransport.ExtendedProtocolDiscriminator.GetExtendedProtocolDiscriminator() != 126 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, Extended Protocol not expected value")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, Extended Protocol not expected value")
 	}
 
 	if message.DLNASTransport.SpareHalfOctetAndSecurityHeaderType.GetSpareHalfOctet() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, Spare Half not expected value")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, Spare Half not expected value")
 	}
 
 	if message.DLNASTransport.SpareHalfOctetAndSecurityHeaderType.GetSecurityHeaderType() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, Security Header not expected value")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, Security Header not expected value")
 	}
 
 	if message.DLNASTransport.DLNASTRANSPORTMessageIdentity.GetMessageType() != 104 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, Message Type is missing or not expected value")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, Message Type is missing or not expected value")
 	}
 
 	if reflect.ValueOf(message.DLNASTransport.SpareHalfOctetAndPayloadContainerType).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, Payload Container Type is missing")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, Payload Container Type is missing")
 	}
 
 	if message.DLNASTransport.SpareHalfOctetAndPayloadContainerType.GetPayloadContainerType() != 1 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, Payload Container Type not expected value")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, Payload Container Type not expected value")
 	}
 
 	if reflect.ValueOf(message.DLNASTransport.PayloadContainer).IsZero() || message.DLNASTransport.PayloadContainer.GetPayloadContainerContents() == nil {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, Payload Container is missing")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, Payload Container is missing")
 	}
 
 	if reflect.ValueOf(message.DLNASTransport.PduSessionID2Value).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, PDU Session ID is missing")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, PDU Session ID is missing")
 	}
 
 	if message.DLNASTransport.PduSessionID2Value.GetIei() != 18 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in DL NAS Transport, PDU Session ID not expected value")
+		log.WithFields(logFields).Fatal("Error in DL NAS Transport, PDU Session ID not expected value")
 	}
 
 	//getting PDU Session establishment accept.
@@ -317,50 +361,50 @@ func HandlerDlNasTransportPduaccept(ue *context.UEContext, message *nas.Message)
 
 	switch payloadContainer.GsmHeader.GetMessageType() {
 	case nas.MsgTypePDUSessionEstablishmentAccept:
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Receiving PDU Session Establishment Accept")
+		log.WithFields(logFields).Info("Receiving PDU Session Establishment Accept")
 
 		// get UE ip
 		pduSessionEstablishmentAccept := payloadContainer.PDUSessionEstablishmentAccept
 
 		// check the mandatory fields
 		if reflect.ValueOf(pduSessionEstablishmentAccept.ExtendedProtocolDiscriminator).IsZero() {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, Extended Protocol Discriminator is missing")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, Extended Protocol Discriminator is missing")
 		}
 
 		if pduSessionEstablishmentAccept.GetExtendedProtocolDiscriminator() != 46 {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, Extended Protocol Discriminator not expected value")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, Extended Protocol Discriminator not expected value")
 		}
 
 		if reflect.ValueOf(pduSessionEstablishmentAccept.PDUSessionID).IsZero() {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, PDU Session ID is missing or not expected value")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, PDU Session ID is missing or not expected value")
 		}
 
 		if reflect.ValueOf(pduSessionEstablishmentAccept.PTI).IsZero() {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, PTI is missing")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, PTI is missing")
 		}
 
 		if pduSessionEstablishmentAccept.PTI.GetPTI() != 1 {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, PTI not the expected value")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, PTI not the expected value")
 		}
 
 		if pduSessionEstablishmentAccept.PDUSESSIONESTABLISHMENTACCEPTMessageIdentity.GetMessageType() != 194 {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, Message Type is missing or not expected value")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, Message Type is missing or not expected value")
 		}
 
 		if reflect.ValueOf(pduSessionEstablishmentAccept.SelectedSSCModeAndSelectedPDUSessionType).IsZero() {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, SSC Mode or PDU Session Type is missing")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, SSC Mode or PDU Session Type is missing")
 		}
 
 		if pduSessionEstablishmentAccept.SelectedSSCModeAndSelectedPDUSessionType.GetPDUSessionType() != 1 {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, PDU Session Type not the expected value")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, PDU Session Type not the expected value")
 		}
 
 		if reflect.ValueOf(pduSessionEstablishmentAccept.AuthorizedQosRules).IsZero() {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, Authorized QoS Rules is missing")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, Authorized QoS Rules is missing")
 		}
 
 		if reflect.ValueOf(pduSessionEstablishmentAccept.SessionAMBR).IsZero() {
-			log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in PDU Session Establishment Accept, Session AMBR is missing")
+			log.WithFields(logFields).Fatal("Error in PDU Session Establishment Accept, Session AMBR is missing")
 		}
 
 		// update PDU Session information.
@@ -369,7 +413,7 @@ func HandlerDlNasTransportPduaccept(ue *context.UEContext, message *nas.Message)
 		// change the state of ue(SM)(PDU Session Active).
 		pduSession.SetStateSM_PDU_SESSION_ACTIVE()
 		if err != nil {
-			log.Error("[UE][NAS][]()()(", ue.GetMsin(), ") Receiving PDU Session Establishment Accept about an unknown PDU Session, id: ", pduSessionId)
+			log.WithFields(logFields).Error("Receiving PDU Session Establishment Accept about an unknown PDU Session, id: ", pduSessionId)
 			return
 		}
 
@@ -385,37 +429,37 @@ func HandlerDlNasTransportPduaccept(ue *context.UEContext, message *nas.Message)
 		sst := pduSessionEstablishmentAccept.SNSSAI.GetSST()
 		sd := pduSessionEstablishmentAccept.SNSSAI.GetSD()
 
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") PDU session QoS RULES: ", QosRule)
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") PDU session DNN: ", string(dnn))
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") PDU session NSSAI -- sst: ", sst, " sd: ",
+		log.WithFields(logFields).Info("PDU session QoS RULES: ", QosRule)
+		log.WithFields(logFields).Info("PDU session DNN: ", string(dnn))
+		log.WithFields(logFields).Info("PDU session NSSAI -- sst: ", sst, " sd: ",
 			fmt.Sprintf("%x%x%x", sd[0], sd[1], sd[2]))
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") PDU address received: ", pduSession.GetIp())
+		log.WithFields(logFields).Info("PDU address received: ", pduSession.GetIp())
 	case nas.MsgTypePDUSessionReleaseCommand:
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Receiving PDU Session Release Command")
+		log.WithFields(logFields).Info("Receiving PDU Session Release Command")
 
 		pduSessionReleaseCommand := payloadContainer.PDUSessionReleaseCommand
 		pduSessionId := pduSessionReleaseCommand.GetPDUSessionID()
 		pduSession, err := ue.GetPduSession(pduSessionId)
 		if pduSession == nil || err != nil {
-			log.Error("[UE][NAS][]()()(", ue.GetMsin(), ") Unable to delete PDU Session ", pduSessionId, " from UE ", ue.GetMsin(), " as the PDU Session was not found. Ignoring.")
+			log.WithFields(logFields).Error("Unable to delete PDU Session ", pduSessionId, " from UE ", ue.GetMsin(), " as the PDU Session was not found. Ignoring.")
 			break
 		}
 		ue.DeletePduSession(pduSessionId)
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Successfully released PDU Session ", pduSessionId, " from UE Context")
+		log.WithFields(logFields).Info("Successfully released PDU Session ", pduSessionId, " from UE Context")
 		trigger.InitPduSessionReleaseComplete(ue, pduSession)
 
 	case nas.MsgTypePDUSessionEstablishmentReject:
-		log.Error("[UE][NAS][]()()(", ue.GetMsin(), ") Receiving PDU Session Establishment Reject")
+		log.WithFields(logFields).Error("Receiving PDU Session Establishment Reject")
 
 		pduSessionEstablishmentReject := payloadContainer.PDUSessionEstablishmentReject
 		pduSessionId := pduSessionEstablishmentReject.GetPDUSessionID()
 
-		log.Error("[UE][NAS][]()()(", ue.GetMsin(), ") PDU Session Establishment Reject for PDU Session ID ", pduSessionId, ", 5GSM Cause: ", cause5GSMToString(pduSessionEstablishmentReject.GetCauseValue()))
+		log.WithFields(logFields).Error("PDU Session Establishment Reject for PDU Session ID ", pduSessionId, ", 5GSM Cause: ", cause5GSMToString(pduSessionEstablishmentReject.GetCauseValue()))
 
 		// Per 5GSM state machine in TS 24.501 - 6.1.3.2.1., we re-try the setup until it's successful
 		pduSession, err := ue.GetPduSession(pduSessionId)
 		if err != nil {
-			log.Error("[UE][NAS][]()()(", ue.GetMsin(), ") Cannot retry PDU Session Request for PDU Session ", pduSessionId, " after Reject as ", err)
+			log.WithFields(logFields).Error("Cannot retry PDU Session Request for PDU Session ", pduSessionId, " after Reject as ", err)
 			break
 		}
 		if pduSession.T3580Retries < 5 {
@@ -427,50 +471,58 @@ func HandlerDlNasTransportPduaccept(ue *context.UEContext, message *nas.Message)
 				pduSession.T3580Retries++
 			}()
 		} else {
-			log.Error("[UE][NAS][]()()(", ue.GetMsin(), ") We re-tried five times to create PDU Session ", pduSessionId, ", Aborting.")
+			log.WithFields(logFields).Error("We re-tried five times to create PDU Session ", pduSessionId, ", Aborting.")
 		}
 
 	default:
-		log.Error("[UE][NAS][]()()(", ue.GetMsin(), ") Receiving Unknown Dl NAS Transport message!! ", payloadContainer.GsmHeader.GetMessageType())
+		log.WithFields(logFields).Error("Receiving Unknown Dl NAS Transport message!! ", payloadContainer.GsmHeader.GetMessageType())
 	}
 }
 
 func HandlerIdentityRequest(ue *context.UEContext, message *nas.Message) {
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	// check the mandatory fields
 	if reflect.ValueOf(message.IdentityRequest.ExtendedProtocolDiscriminator).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Identity Request, Extended Protocol is missing")
+		log.WithFields(logFields).Fatal("Error in Identity Request, Extended Protocol is missing")
 	}
 
 	if message.IdentityRequest.ExtendedProtocolDiscriminator.GetExtendedProtocolDiscriminator() != 126 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Identity Request, Extended Protocol not the expected value")
+		log.WithFields(logFields).Fatal("Error in Identity Request, Extended Protocol not the expected value")
 	}
 
 	if message.IdentityRequest.SpareHalfOctetAndSecurityHeaderType.GetSpareHalfOctet() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Identity Request, Spare Half Octet not the expected value")
+		log.WithFields(logFields).Fatal("Error in Identity Request, Spare Half Octet not the expected value")
 	}
 
 	if message.IdentityRequest.SpareHalfOctetAndSecurityHeaderType.GetSecurityHeaderType() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Identity Request, Security Header Type not the expected value")
+		log.WithFields(logFields).Fatal("Error in Identity Request, Security Header Type not the expected value")
 	}
 
 	if reflect.ValueOf(message.IdentityRequest.IdentityRequestMessageIdentity).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Identity Request, Message Type is missing")
+		log.WithFields(logFields).Fatal("Error in Identity Request, Message Type is missing")
 	}
 
 	if message.IdentityRequest.IdentityRequestMessageIdentity.GetMessageType() != 91 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Identity Request, Message Type not the expected value")
+		log.WithFields(logFields).Fatal("Error in Identity Request, Message Type not the expected value")
 	}
 
 	if reflect.ValueOf(message.IdentityRequest.SpareHalfOctetAndIdentityType).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Identity Request, Spare Half Octet And Identity Type is missing")
+		log.WithFields(logFields).Fatal("Error in Identity Request, Spare Half Octet And Identity Type is missing")
 	}
 
 	switch message.IdentityRequest.GetTypeOfIdentity() {
 	case 1:
-		log.Info("[UE][NAS][]()()(", ue.GetMsin(), ") Requested SUCI 5GS type")
+		log.WithFields(logFields).Info("Requested SUCI 5GS type")
 	default:
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Only SUCI identity is supported for now inside PacketRusher")
+		log.WithFields(logFields).Fatal("Only SUCI identity is supported for now inside PacketRusher")
 	}
 
 	trigger.InitIdentifyResponse(ue)
@@ -478,29 +530,37 @@ func HandlerIdentityRequest(ue *context.UEContext, message *nas.Message) {
 
 func HandlerConfigurationUpdateCommand(ue *context.UEContext, message *nas.Message) {
 
+	logFields := make(log.Fields)
+
+	logFields[misc.NODE] = misc.UE
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NAS
+	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
+	logFields[misc.UE_MSIN] = ue.GetMsin()
+
 	// check the mandatory fields
 	if reflect.ValueOf(message.ConfigurationUpdateCommand.ExtendedProtocolDiscriminator).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Configuration Update Command, Extended Protocol Discriminator is missing")
+		log.WithFields(logFields).Fatal("Error in Configuration Update Command, Extended Protocol Discriminator is missing")
 	}
 
 	if message.ConfigurationUpdateCommand.ExtendedProtocolDiscriminator.GetExtendedProtocolDiscriminator() != 126 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Configuration Update Command, Extended Protocol Discriminator not the expected value")
+		log.WithFields(logFields).Fatal("Error in Configuration Update Command, Extended Protocol Discriminator not the expected value")
 	}
 
 	if message.ConfigurationUpdateCommand.SpareHalfOctetAndSecurityHeaderType.GetSpareHalfOctet() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Configuration Update Command, Spare Half not the expected value")
+		log.WithFields(logFields).Fatal("Error in Configuration Update Command, Spare Half not the expected value")
 	}
 
 	if message.ConfigurationUpdateCommand.SpareHalfOctetAndSecurityHeaderType.GetSecurityHeaderType() != 0 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Configuration Update Command, Security Header not the expected value")
+		log.WithFields(logFields).Fatal("Error in Configuration Update Command, Security Header not the expected value")
 	}
 
 	if reflect.ValueOf(message.ConfigurationUpdateCommand.ConfigurationUpdateCommandMessageIdentity).IsZero() {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Configuration Update Command, Message type not the expected value")
+		log.WithFields(logFields).Fatal("Error in Configuration Update Command, Message type not the expected value")
 	}
 
 	if message.ConfigurationUpdateCommand.ConfigurationUpdateCommandMessageIdentity.GetMessageType() != 84 {
-		log.Fatal("[UE][NAS][]()()(", ue.GetMsin(), ") Error in Configuration Update Command, Message Type not the expected value")
+		log.WithFields(logFields).Fatal("Error in Configuration Update Command, Message Type not the expected value")
 	}
 
 	// return configuration update complete

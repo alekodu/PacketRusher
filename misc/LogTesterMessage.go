@@ -36,9 +36,10 @@ const (
 
 // Tester Functionalities
 const (
-	CONFIG = "CONFIG"
-	SIMUL  = "SIMUL"
-	SETUP  = "SETUP"
-	MESSAG = "MESSAG"
-	DATA   = "DATA"
+	CONFIG  = "CONFIG"
+	SIMUL   = "SIMUL"
+	SETUP   = "SETUP"
+	MESSAG  = "MESSAG"
+	DATA    = "DATA"
+	CAPTURE = "CAPTURE"
 )

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"my5G-RANTester/internal/control_test_engine/gnb/context"
+	"my5G-RANTester/misc"
 
 	"github.com/free5gc/ngap"
 	log "github.com/sirupsen/logrus"
@@ -128,6 +129,8 @@ func (builder *PathSwitchRequestBuilder) PathSwitchRequestTransfer(gnbN3Ip strin
 	ie.Value.Present = ngapType.PathSwitchRequestIEsPresentPDUSessionResourceToBeSwitchedDLList
 	ie.Value.PDUSessionResourceToBeSwitchedDLList = new(ngapType.PDUSessionResourceToBeSwitchedDLList)
 
+	logFields := make(log.Fields)
+
 	for _, pduSession := range pduSessions {
 		if pduSession == nil {
 			continue
@@ -153,8 +156,13 @@ func (builder *PathSwitchRequestBuilder) PathSwitchRequestTransfer(gnbN3Ip strin
 
 		ie.Value.PDUSessionResourceToBeSwitchedDLList.List = append(ie.Value.PDUSessionResourceToBeSwitchedDLList.List, item)
 	}
+
+	logFields[misc.NODE] = misc.GNB
+	logFields[misc.FUNCTION] = misc.MESSAG
+	logFields[misc.PROTOCOL] = misc.NGAP
+
 	if len(ie.Value.PDUSessionResourceToBeSwitchedDLList.List) == 0 {
-		log.Error("[GNB][NGAP] No PDU Session to hand over. Xn Handover requires at least a PDU Session.")
+		log.WithFields(logFields).Error("No PDU Session to hand over. Xn Handover requires at least a PDU Session.")
 		return builder
 	}
 
