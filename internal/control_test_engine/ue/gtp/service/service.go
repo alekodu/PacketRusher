@@ -82,6 +82,9 @@ func SetupGtpInterface(ue *context.UEContext, msg gnbContext.UEMessage) {
 
 	time.Sleep(time.Second)
 
+	ue.SetProcedureStage(string(context.TERMINATED))
+	logFields[misc.STAGE] = ue.GetProcedureStage()
+
 	cmdAddFar := []string{nameInf, "1", "--action", "2"}
 	log.WithFields(logFields).Debug("Setting up GTP Forwarding Action Rule for ", strings.Join(cmdAddFar, " "))
 	if err := gtpTunnel.CmdAddFAR(cmdAddFar); err != nil {
