@@ -745,6 +745,8 @@ func HandlerUeContextReleaseCommand(gnb *context.GNBContext, message *ngapType.N
 		return
 	}
 
+	ue.SetProcedureStage(string(context.TERMINATED))
+
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
