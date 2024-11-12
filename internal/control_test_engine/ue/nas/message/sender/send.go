@@ -27,6 +27,8 @@ func SendToGnbMsg(ue *context.UEContext, message context2.UEMessage) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	if gnbRx == nil {
 		log.WithFields(logFields).Warn("Do not send NAS messages to gNB as channel is closed")

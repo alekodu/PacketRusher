@@ -26,6 +26,10 @@ import (
 func NewUE(conf config.Config, id int, ueMgrChannel chan procedures.UeTesterMessage, gnbInboundChannel chan context2.UEMessage, wg *sync.WaitGroup) chan scenario.ScenarioMessage {
 	// new UE instance.
 	ue := &context.UEContext{}
+
+	ue.SetProcedureType(string(context.NONE))
+	ue.SetProcedureStage(string(context.IDLE))
+
 	scenarioChan := make(chan scenario.ScenarioMessage)
 
 	// new UE context
@@ -61,6 +65,8 @@ func NewUE(conf config.Config, id int, ueMgrChannel chan procedures.UeTesterMess
 		logFields[misc.PROTOCOL] = misc.NAS
 		logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 		logFields[misc.UE_MSIN] = ue.GetMsin()
+		logFields[misc.PROCEDURE] = ue.GetProcedureType()
+		logFields[misc.STAGE] = ue.GetProcedureStage()
 
 		// Block until a signal is received.
 		loop := true
@@ -100,6 +106,8 @@ func gnbMsgHandler(msg context2.UEMessage, ue *context.UEContext) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	if msg.IsNas {
 		state.DispatchState(ue, msg.Nas)
@@ -141,6 +149,8 @@ func ueMgrHandler(msg procedures.UeTesterMessage, ue *context.UEContext) bool {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	loop := true
 	switch msg.Type {

@@ -23,6 +23,8 @@ import (
 )
 
 func InitRegistration(ue *context.UEContext) {
+	ue.SetProcedureType(string(context.UE_ATTACH))
+	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields := make(log.Fields)
 
@@ -31,6 +33,8 @@ func InitRegistration(ue *context.UEContext) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Initiating Registration")
 
@@ -57,6 +61,8 @@ func InitRegistration(ue *context.UEContext) {
 }
 
 func InitPduSessionRequest(ue *context.UEContext) {
+	ue.SetProcedureType(string(context.CREATE_PDU_SESSION))
+	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields := make(log.Fields)
 
@@ -65,6 +71,8 @@ func InitPduSessionRequest(ue *context.UEContext) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Initiating New PDU Session")
 
@@ -86,6 +94,8 @@ func InitPduSessionRequestInner(ue *context.UEContext, pduSession *context.UEPDU
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	ulNasTransport, err := mm_5gs.Request_UlNasTransport(pduSession, ue)
 	if err != nil {
@@ -100,6 +110,8 @@ func InitPduSessionRequestInner(ue *context.UEContext, pduSession *context.UEPDU
 }
 
 func InitPduSessionRelease(ue *context.UEContext, pduSession *context.UEPDUSession) {
+	ue.SetProcedureType(string(context.DELETE_PDU_SESSION))
+	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields := make(log.Fields)
 
@@ -108,6 +120,8 @@ func InitPduSessionRelease(ue *context.UEContext, pduSession *context.UEPDUSessi
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Initiating Release of PDU Session ", pduSession.Id)
 
@@ -137,6 +151,8 @@ func InitPduSessionReleaseComplete(ue *context.UEContext, pduSession *context.UE
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Initiating PDU Session Release Complete for PDU Session", pduSession.Id)
 
@@ -155,6 +171,8 @@ func InitPduSessionReleaseComplete(ue *context.UEContext, pduSession *context.UE
 }
 
 func InitDeregistration(ue *context.UEContext) {
+	ue.SetProcedureType(string(context.UE_DETTACH))
+	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields := make(log.Fields)
 
@@ -163,6 +181,8 @@ func InitDeregistration(ue *context.UEContext) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Initiating Deregistration")
 
@@ -188,6 +208,8 @@ func InitIdentifyResponse(ue *context.UEContext) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Initiating Identify Response")
 
@@ -207,6 +229,8 @@ func InitConfigurationUpdateComplete(ue *context.UEContext) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Initiating Configuration Update Complete")
 
@@ -220,6 +244,8 @@ func InitConfigurationUpdateComplete(ue *context.UEContext) {
 }
 
 func InitServiceRequest(ue *context.UEContext) {
+	ue.SetProcedureType(string(context.UE_ENTER))
+	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields := make(log.Fields)
 
@@ -228,6 +254,8 @@ func InitServiceRequest(ue *context.UEContext) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Initiating Service Request")
 
@@ -244,6 +272,8 @@ func InitServiceRequest(ue *context.UEContext) {
 }
 
 func SwitchToIdle(ue *context.UEContext) {
+	ue.SetProcedureType(string(context.UE_EXIT))
+	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields := make(log.Fields)
 
@@ -252,6 +282,8 @@ func SwitchToIdle(ue *context.UEContext) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Switching to 5GMM-IDLE")
 

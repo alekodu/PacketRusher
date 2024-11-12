@@ -69,6 +69,8 @@ func ServiceRequest(ue *context.UEContext) (nasPdu []byte) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	if err = security.NASEncrypt(ue.UeSecurity.CipheringAlg, ue.UeSecurity.KnasEnc, ue.UeSecurity.ULCount.Get(), security.Bearer3GPP,
 		security.DirectionUplink, nasPdu); err != nil {

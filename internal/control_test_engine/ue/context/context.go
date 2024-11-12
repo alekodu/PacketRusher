@@ -69,6 +69,38 @@ type UEContext struct {
 	scenarioChan chan scenario.ScenarioMessage
 
 	lock sync.Mutex
+
+	procContext ProcedureContext
+}
+
+// Procedure Types
+type ProcedureType string
+
+const (
+	NONE               ProcedureType = "None"
+	UE_ATTACH          ProcedureType = "UEAttach"
+	UE_DETTACH         ProcedureType = "UEDettach"
+	CREATE_PDU_SESSION ProcedureType = "CreatePDUSesion"
+	DELETE_PDU_SESSION ProcedureType = "DeletePDUSession"
+	UE_EXIT            ProcedureType = "UEExit"
+	UE_ENTER           ProcedureType = "UEEnter"
+	XN_HANDOVER        ProcedureType = "XnHandover"
+	N2_HANDOVER        ProcedureType = "N2Handover"
+)
+
+// Procedure Stages
+type ProcedureStage string
+
+const (
+	IDLE       ProcedureStage = "Idle"
+	INITIATED  ProcedureStage = "Initiated"
+	TERMINATED ProcedureStage = "Terminated"
+	CANCELLED  ProcedureStage = "Cancelled"
+)
+
+type ProcedureContext struct {
+	Type  string
+	Stage string
 }
 
 type Amf struct {
@@ -737,12 +769,16 @@ func (ue *UEContext) SetAuthSubscription(k, opc, op, amf, sqn string) {
 func (ue *UEContext) Terminate() {
 	ue.SetStateMM_NULL()
 
+	ue.SetProcedureStage(string(context.TERMINATED))
+
 	logFields := make(log.Fields)
 
 	logFields[misc.NODE] = misc.UE
 	logFields[misc.FUNCTION] = misc.CONFIG
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	// clean all context of tun interface
 	for _, pduSession := range ue.PduSession {
@@ -806,4 +842,20 @@ func hexCharToByte(c byte) byte {
 	}
 
 	return 0
+}
+
+func (ue *UEContext) GetProcedureType() string {
+	return ue.procContext.Type
+}
+
+func (ue *UEContext) SetProcedureType(procType string) {
+	ue.procContext.Type = procType
+}
+
+func (ue *UEContext) GetProcedureStage() string {
+	return ue.procContext.Stage
+}
+
+func (ue *UEContext) SetProcedureStage(procStage string) {
+	ue.procContext.Stage = procStage
 }

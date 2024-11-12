@@ -38,6 +38,8 @@ func NASEncode(ue *context.UEContext, msg *nas.Message, securityContextAvailable
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	if ue == nil {
 		err = fmt.Errorf("amfUe is nil")

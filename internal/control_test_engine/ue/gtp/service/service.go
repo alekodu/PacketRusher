@@ -33,6 +33,8 @@ func SetupGtpInterface(ue *context.UEContext, msg gnbContext.UEMessage) {
 	logFields[misc.PROTOCOL] = misc.GTP
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	if pduSession == nil || err != nil {
 		log.WithFields(logFields).Error("Aborting the setup of PDU Session ", gnbPduSession.GetPduSessionId(), ", this PDU session was not succesfully configured on the UE's side.")

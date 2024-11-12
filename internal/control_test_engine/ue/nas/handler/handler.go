@@ -31,6 +31,8 @@ func HandlerAuthenticationReject(ue *context.UEContext, message *nas.Message) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	log.WithFields(logFields).Info("Authentication of UE ", ue.GetUeId(), " failed")
 
@@ -46,6 +48,8 @@ func HandlerAuthenticationRequest(ue *context.UEContext, message *nas.Message) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	var authenticationResponse []byte
 
@@ -136,6 +140,8 @@ func HandlerSecurityModeCommand(ue *context.UEContext, message *nas.Message) { /
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	if reflect.ValueOf(message.SecurityModeCommand.ExtendedProtocolDiscriminator).IsZero() {
 		log.WithFields(logFields).Fatal("Error in Security Mode Command, Extended Protocol is missing")
@@ -231,6 +237,8 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	if reflect.ValueOf(message.RegistrationAccept.ExtendedProtocolDiscriminator).IsZero() {
 		log.WithFields(logFields).Fatal("Error in Registration Accept, Extended Protocol is missing")
@@ -298,11 +306,13 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 
 	// sending to GNB
 	sender.SendToGnb(ue, registrationComplete)
+	ue.SetProcedureStage(string(context.TERMINATED))
 }
 
 func HandlerServiceAccept(ue *context.UEContext, message *nas.Message) {
 	// change the state of ue for registered
 	ue.SetStateMM_REGISTERED()
+	ue.SetProcedureStage(string(context.TERMINATED))
 }
 
 func HandlerDlNasTransportPduaccept(ue *context.UEContext, message *nas.Message) {
@@ -314,6 +324,8 @@ func HandlerDlNasTransportPduaccept(ue *context.UEContext, message *nas.Message)
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	// check the mandatory fields
 	if reflect.ValueOf(message.DLNASTransport.ExtendedProtocolDiscriminator).IsZero() {
@@ -412,6 +424,9 @@ func HandlerDlNasTransportPduaccept(ue *context.UEContext, message *nas.Message)
 		pduSession, err := ue.GetPduSession(pduSessionId)
 		// change the state of ue(SM)(PDU Session Active).
 		pduSession.SetStateSM_PDU_SESSION_ACTIVE()
+		ue.SetProcedureStage(string(context.TERMINATED))
+		logFields[misc.STAGE] = ue.GetProcedureStage()
+
 		if err != nil {
 			log.WithFields(logFields).Error("Receiving PDU Session Establishment Accept about an unknown PDU Session, id: ", pduSessionId)
 			return
@@ -488,6 +503,8 @@ func HandlerIdentityRequest(ue *context.UEContext, message *nas.Message) {
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	// check the mandatory fields
 	if reflect.ValueOf(message.IdentityRequest.ExtendedProtocolDiscriminator).IsZero() {
@@ -537,6 +554,8 @@ func HandlerConfigurationUpdateCommand(ue *context.UEContext, message *nas.Messa
 	logFields[misc.PROTOCOL] = misc.NAS
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
 	logFields[misc.UE_MSIN] = ue.GetMsin()
+	logFields[misc.PROCEDURE] = ue.GetProcedureType()
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	// check the mandatory fields
 	if reflect.ValueOf(message.ConfigurationUpdateCommand.ExtendedProtocolDiscriminator).IsZero() {
