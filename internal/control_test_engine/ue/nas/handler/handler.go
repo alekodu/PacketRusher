@@ -274,6 +274,7 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 
 	// change the state of ue for registered
 	ue.SetStateMM_REGISTERED()
+	ue.SetProcedureStage(string(context.TERMINATED))
 
 	// saved 5g GUTI and others information.
 	if message.RegistrationAccept.GUTI5G != nil {
@@ -306,7 +307,6 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 
 	// sending to GNB
 	sender.SendToGnb(ue, registrationComplete)
-	ue.SetProcedureStage(string(context.TERMINATED))
 }
 
 func HandlerServiceAccept(ue *context.UEContext, message *nas.Message) {

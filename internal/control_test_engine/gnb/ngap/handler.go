@@ -318,7 +318,7 @@ func HandlerPduSessionResourceSetupRequest(gnb *context.GNBContext, message *nga
 		case ngapType.ProtocolIEIDPDUSessionResourceSetupListSUReq:
 
 			if ies.Value.PDUSessionResourceSetupListSUReq == nil {
-				log.WithFields(logFields).Fatal("[PDU SESSION RESOURCE SETUP LIST SU REQ is missing")
+				log.WithFields(logFields).Fatal("PDU SESSION RESOURCE SETUP LIST SU REQ is missing")
 			}
 			pDUSessionResourceSetupList = ies.Value.PDUSessionResourceSetupListSUReq
 		}
@@ -329,6 +329,9 @@ func HandlerPduSessionResourceSetupRequest(gnb *context.GNBContext, message *nga
 		log.WithFields(logFields).Errorf("Cannot setup PDU Session for unknown UE With RANUEID %d", ranUeId)
 		return
 	}
+
+	ue.SetProcedureType(string(context.CREATE_PDU_SESSION))
+	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
@@ -426,7 +429,7 @@ func HandlerPduSessionResourceSetupRequest(gnb *context.GNBContext, message *nga
 		log.WithFields(logFields).Info("NSSAI Selected --- sst: ", sst, " sd: ", sd)
 		log.WithFields(logFields).Info("PDU Session Type: ", pduSession.GetPduType())
 		log.WithFields(logFields).Info("QOS Flow Identifier: ", pduSession.GetQosId())
-		log.WithFields(logFields).Info("[Uplink Teid: ", pduSession.GetTeidUplink())
+		log.WithFields(logFields).Info("Uplink Teid: ", pduSession.GetTeidUplink())
 		log.WithFields(logFields).Info("Downlink Teid: ", pduSession.GetTeidDownlink())
 		log.WithFields(logFields).Info("Non-Dynamic-5QI: ", pduSession.GetFiveQI())
 		log.WithFields(logFields).Info("Priority Level ARP: ", pduSession.GetPriorityARP())
@@ -506,6 +509,9 @@ func HandlerPduSessionReleaseCommand(gnb *context.GNBContext, message *ngapType.
 		log.WithFields(logFields).Errorf("Cannot release PDU Session for unknown UE With RANUEID %d", ranUeId)
 		return
 	}
+
+	ue.SetProcedureType(string(context.DELETE_PDU_SESSION))
+	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
