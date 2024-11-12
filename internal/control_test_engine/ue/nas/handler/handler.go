@@ -275,12 +275,13 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 	// change the state of ue for registered
 	ue.SetStateMM_REGISTERED()
 	ue.SetProcedureStage(string(context.TERMINATED))
+	logFields[misc.STAGE] = ue.GetProcedureStage()
 
 	// saved 5g GUTI and others information.
 	if message.RegistrationAccept.GUTI5G != nil {
 		ue.Set5gGuti(message.RegistrationAccept.GUTI5G)
 	} else {
-		log.Warn("UE was not assigned a 5G-GUTI by AMF")
+		log.WithFields(logFields).Warn("UE was not assigned a 5G-GUTI by AMF")
 	}
 
 	// use the slice allowed by the network
@@ -294,7 +295,7 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 		ue.Snssai.Sst = int32(snssai[1])
 		ue.Snssai.Sd = fmt.Sprintf("0%x0%x0%x", snssai[2], snssai[3], snssai[4])
 
-		log.Warn("ALLOWED NSSAI: SST: ", ue.Snssai.Sst, " SD: ", ue.Snssai.Sd)
+		log.WithFields(logFields).Warn("ALLOWED NSSAI: SST: ", ue.Snssai.Sst, " SD: ", ue.Snssai.Sd)
 	}
 
 	log.WithFields(logFields).Info("UE 5G GUTI: ", ue.Get5gGuti())

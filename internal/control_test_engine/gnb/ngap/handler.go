@@ -1231,6 +1231,9 @@ func HandlerHandoverRequest(amf *context.GNBAmf, gnb *context.GNBContext, messag
 
 	ue.CreateUeContext("not informed", maskedImeisv, sst, sd, ueSecurityCapabilities)
 
+	ue.SetProcedureType(string(context.N2_HANDOVER))
+	ue.SetProcedureStage(string(context.INITIATED))
+
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 	logFields[misc.UE_PR_ID] = ue.GetPrUeId()
