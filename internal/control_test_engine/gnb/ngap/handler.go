@@ -206,6 +206,9 @@ func HandlerInitialContextSetupRequest(gnb *context.GNBContext, message *ngapTyp
 	// create UE context.
 	ue.CreateUeContext(mobilityRestrict, maskedImeisv, sst, sd, ueSecurityCapabilities)
 
+	ue.SetProcedureType(string(context.UE_ATTACH))
+	ue.SetProcedureStage(string(context.INITIATED))
+
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 	logFields[misc.GNB_ID] = gnb.GetGnbId()
