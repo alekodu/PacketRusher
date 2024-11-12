@@ -144,6 +144,10 @@ func processingConn(ue *context.GNBUe, gnb *context.GNBContext) {
 
 		// send to dispatch.
 		if message.ConnectionClosed {
+			ue.SetProcedureType(string(context.N2_HANDOVER))
+			ue.SetProcedureStage(string(context.INITIATED))
+			logFields[misc.PROCEDURE] = ue.GetProcedureType()
+			logFields[misc.STAGE] = ue.GetProcedureStage()
 			logFields[misc.FUNCTION] = misc.SETUP
 			log.WithFields(logFields).Info("Cleaning up context on current gNb")
 			gnbUeContext.SetStateDown()
