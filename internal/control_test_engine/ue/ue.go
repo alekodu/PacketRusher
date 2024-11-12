@@ -115,6 +115,11 @@ func gnbMsgHandler(msg context2.UEMessage, ue *context.UEContext) {
 		// Setup PDU Session
 		serviceGtp.SetupGtpInterface(ue, msg)
 	} else if msg.GNBRx != nil && msg.GNBTx != nil && msg.GNBInboundChannel != nil {
+		ue.SetProcedureType(string(context.N2_HANDOVER))
+		ue.SetProcedureStage(string(context.INITIATED))
+		logFields[misc.PROCEDURE] = ue.GetProcedureType()
+		logFields[misc.STAGE] = ue.GetProcedureStage()
+
 		log.WithFields(logFields).Info("gNodeB is telling us to use another gNodeB")
 		previousGnbRx := ue.GetGnbRx()
 		ue.SetGnbInboundChannel(msg.GNBInboundChannel)

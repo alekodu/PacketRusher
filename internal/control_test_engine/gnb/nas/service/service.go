@@ -58,6 +58,9 @@ func gnbListen(gnb *context.GNBContext) {
 			ue.SetGnbRx(message.GNBRx)
 			ue.SetGnbTx(message.GNBTx)
 
+			ue.SetProcedureType(string(context.N2_HANDOVER))
+			ue.SetProcedureStage(string(context.INITIATED))
+
 			// We enable the new PDU Session handed over to us
 			msg := context.UEMessage{GNBPduSessions: ue.GetPduSessions(), GnbIp: gnb.GetN3GnbIp()}
 			sender.SendMessageToUe(ue, gnb, msg)
