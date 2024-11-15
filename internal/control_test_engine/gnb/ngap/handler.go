@@ -13,6 +13,7 @@ import (
 	"my5G-RANTester/internal/control_test_engine/gnb/ngap/trigger"
 	"my5G-RANTester/misc"
 	"reflect"
+	"strings"
 
 	_ "net"
 
@@ -749,7 +750,7 @@ func HandlerUeContextReleaseCommand(gnb *context.GNBContext, message *ngapType.N
 
 	if sCause == "Deregister" {
 		ue.SetProcedureType(string(context.UE_DETTACH))
-	} else if "handover" in sCause {
+	} else if strings.Contains(sCause, "handover") {
 		ue.SetProcedureType(string(context.HANDOVER))
 	}
 
