@@ -149,7 +149,7 @@ func SendUeContextReleaseComplete(ue *context.GNBUe, gnbId string) {
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
 
-	log.WithFields(logFields).Info("Initiating UE Context Complete")
+	log.WithFields(logFields).Info("Initiating UE Context Release Complete")
 
 	// send UE Context Release Complete
 	ngapMsg, err := ue_context_management.UeContextReleaseComplete(ue)

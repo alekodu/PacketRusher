@@ -193,7 +193,7 @@ func ueMgrHandler(msg procedures.UeTesterMessage, ue *context.UEContext) bool {
 		}
 	case procedures.Terminate:
 		ue.SetProcedureType(string(context.UE_DETTACH))
-		ue.SetProcedureStage(string(context.INITIATED))
+		ue.SetProcedureStage(string(context.IDLE))
 		logFields[misc.PROCEDURE] = ue.GetProcedureType()
 		logFields[misc.STAGE] = ue.GetProcedureStage()
 		log.WithFields(logFields).Info("Terminating UE as requested")
