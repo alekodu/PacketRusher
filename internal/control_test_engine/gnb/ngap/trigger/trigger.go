@@ -306,7 +306,7 @@ func TriggerXnHandover(oldGnb *context.GNBContext, newGnb *context.GNBContext, p
 	logFields[misc.UE_PR_ID] = prUeId
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
-	logFields[misc.PROCEDURE] = context.XN_HANDOVER
+	logFields[misc.PROCEDURE] = context.HANDOVER
 	logFields[misc.STAGE] = context.INITIATED
 
 	log.WithFields(logFields).Info("Initiating Xn Handover")
@@ -334,7 +334,7 @@ func TriggerNgapHandover(oldGnb *context.GNBContext, newGnb *context.GNBContext,
 	logFields[misc.UE_PR_ID] = prUeId
 	logFields[misc.FUNCTION] = misc.MESSAG
 	logFields[misc.PROTOCOL] = misc.NGAP
-	logFields[misc.PROCEDURE] = context.N2_HANDOVER
+	logFields[misc.PROCEDURE] = context.HANDOVER
 	logFields[misc.STAGE] = context.INITIATED
 
 	log.WithFields(logFields).Info("Initiating NGAP Handover")

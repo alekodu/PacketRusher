@@ -745,7 +745,14 @@ func HandlerUeContextReleaseCommand(gnb *context.GNBContext, message *ngapType.N
 		return
 	}
 
-	ue.SetProcedureType(string(context.UE_DETTACH))
+	var sCause = causeToString(cause)
+
+	if sCause == "Deregister" {
+		ue.SetProcedureType(string(context.UE_DETTACH))
+	} else if "handover" in sCause {
+		ue.SetProcedureType(string(context.HANDOVER))
+	}
+
 	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
@@ -758,7 +765,7 @@ func HandlerUeContextReleaseCommand(gnb *context.GNBContext, message *ngapType.N
 	// Send UEContextReleaseComplete
 	trigger.SendUeContextReleaseComplete(ue, gnb.GetGnbId())
 
-	log.WithFields(logFields).Info("Releasing UE Context, cause: ", causeToString(cause))
+	log.WithFields(logFields).Info("Releasing UE Context, cause: ", sCause)
 }
 
 func HandlerAmfConfigurationUpdate(amf *context.GNBAmf, gnb *context.GNBContext, message *ngapType.NGAPPDU) {
@@ -1234,7 +1241,7 @@ func HandlerHandoverRequest(amf *context.GNBAmf, gnb *context.GNBContext, messag
 
 	ue.CreateUeContext("not informed", maskedImeisv, sst, sd, ueSecurityCapabilities)
 
-	ue.SetProcedureType(string(context.N2_HANDOVER))
+	ue.SetProcedureType(string(context.HANDOVER))
 	ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()

@@ -84,8 +84,7 @@ const (
 	DELETE_PDU_SESSION ProcedureType = "DeletePDUSession"
 	UE_EXIT            ProcedureType = "UEExit"
 	UE_ENTER           ProcedureType = "UEEnter"
-	XN_HANDOVER        ProcedureType = "XnHandover"
-	N2_HANDOVER        ProcedureType = "N2Handover"
+	HANDOVER           ProcedureType = "Handover"
 )
 
 // Procedure Stages

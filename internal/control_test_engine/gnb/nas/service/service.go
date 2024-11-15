@@ -58,7 +58,7 @@ func gnbListen(gnb *context.GNBContext) {
 			ue.SetGnbRx(message.GNBRx)
 			ue.SetGnbTx(message.GNBTx)
 
-			ue.SetProcedureType(string(context.N2_HANDOVER))
+			ue.SetProcedureType(string(context.HANDOVER))
 			ue.SetProcedureStage(string(context.INITIATED))
 
 			// We enable the new PDU Session handed over to us
@@ -80,7 +80,7 @@ func gnbListen(gnb *context.GNBContext) {
 			}
 			if message.UEContext != nil && message.IsHandover {
 				// Xn Handover
-				ue.SetProcedureType(string(context.XN_HANDOVER))
+				ue.SetProcedureType(string(context.HANDOVER))
 				ue.SetProcedureStage(string(context.INITIATED))
 
 				logFields[misc.PROCEDURE] = ue.GetProcedureType()
@@ -144,7 +144,7 @@ func processingConn(ue *context.GNBUe, gnb *context.GNBContext) {
 
 		// send to dispatch.
 		if message.ConnectionClosed {
-			ue.SetProcedureType(string(context.N2_HANDOVER))
+			ue.SetProcedureType(string(context.HANDOVER))
 			ue.SetProcedureStage(string(context.INITIATED))
 			logFields[misc.PROCEDURE] = ue.GetProcedureType()
 			logFields[misc.STAGE] = ue.GetProcedureStage()
