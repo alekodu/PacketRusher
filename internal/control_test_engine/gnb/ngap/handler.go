@@ -754,7 +754,7 @@ func HandlerUeContextReleaseCommand(gnb *context.GNBContext, message *ngapType.N
 		ue.SetProcedureType(string(context.HANDOVER))
 	}
 
-	ue.SetProcedureStage(string(context.INITIATED))
+	//ue.SetProcedureStage(string(context.INITIATED))
 
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
@@ -765,6 +765,8 @@ func HandlerUeContextReleaseCommand(gnb *context.GNBContext, message *ngapType.N
 
 	// Send UEContextReleaseComplete
 	trigger.SendUeContextReleaseComplete(ue, gnb.GetGnbId())
+
+	ue.SetProcedureStage(string(context.TERMINATED))
 
 	log.WithFields(logFields).Info("Releasing UE Context, cause: ", sCause)
 }
