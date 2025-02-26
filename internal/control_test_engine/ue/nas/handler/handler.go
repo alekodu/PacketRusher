@@ -298,7 +298,7 @@ func HandlerRegistrationAccept(ue *context.UEContext, message *nas.Message) {
 		log.WithFields(logFields).Warn("ALLOWED NSSAI: SST: ", ue.Snssai.Sst, " SD: ", ue.Snssai.Sd)
 	}
 
-	log.WithFields(logFields).Info("UE 5G GUTI: ", ue.Get5gGuti())
+	log.WithFields(logFields).Warn("UE 5G GUTI: ", ue.Get5gGuti())
 
 	// getting NAS registration complete.
 	registrationComplete, err := mm_5gs.RegistrationComplete(ue)
@@ -445,7 +445,7 @@ func HandlerDlNasTransportPduaccept(ue *context.UEContext, message *nas.Message)
 		sst := pduSessionEstablishmentAccept.SNSSAI.GetSST()
 		sd := pduSessionEstablishmentAccept.SNSSAI.GetSD()
 
-		log.WithFields(logFields).Info("PDU session QoS RULES: ", QosRule)
+		log.WithFields(logFields).Warn("PDU session QoS RULES: ", QosRule)
 		log.WithFields(logFields).Info("PDU session DNN: ", string(dnn))
 		log.WithFields(logFields).Info("PDU session NSSAI -- sst: ", sst, " sd: ",
 			fmt.Sprintf("%x%x%x", sd[0], sd[1], sd[2]))

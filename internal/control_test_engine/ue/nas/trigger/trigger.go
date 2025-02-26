@@ -36,7 +36,7 @@ func InitRegistration(ue *context.UEContext) {
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 
-	log.WithFields(logFields).Info("Initiating Registration")
+	log.WithFields(logFields).Warn("Initiating Registration")
 
 	// registration procedure started.
 	registrationRequest := mm_5gs.GetRegistrationRequest(
@@ -74,7 +74,7 @@ func InitPduSessionRequest(ue *context.UEContext) {
 	logFields[misc.PROCEDURE] = ue.GetProcedureType()
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 
-	log.WithFields(logFields).Info("Initiating New PDU Session")
+	log.WithFields(logFields).Warn("Initiating New PDU Session")
 
 	pduSession, err := ue.CreatePDUSession()
 	if err != nil {

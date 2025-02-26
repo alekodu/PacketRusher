@@ -769,7 +769,7 @@ func HandlerUeContextReleaseCommand(gnb *context.GNBContext, message *ngapType.N
 	ue.SetProcedureStage(string(context.TERMINATED))
 	logFields[misc.STAGE] = ue.GetProcedureStage()
 
-	log.WithFields(logFields).Info("Releasing UE Context, cause: ", sCause)
+	log.WithFields(logFields).Warn("Releasing UE Context, cause: ", sCause)
 }
 
 func HandlerAmfConfigurationUpdate(amf *context.GNBAmf, gnb *context.GNBContext, message *ngapType.NGAPPDU) {

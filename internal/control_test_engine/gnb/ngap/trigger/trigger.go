@@ -337,7 +337,7 @@ func TriggerNgapHandover(oldGnb *context.GNBContext, newGnb *context.GNBContext,
 	logFields[misc.PROCEDURE] = context.HANDOVER
 	logFields[misc.STAGE] = context.INITIATED
 
-	log.WithFields(logFields).Info("Initiating NGAP Handover")
+	log.WithFields(logFields).Warn("Initiating NGAP Handover")
 
 	gnbUeContext, err := oldGnb.GetGnbUeByPrUeId(prUeId)
 	if err != nil {
